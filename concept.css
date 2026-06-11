@@ -1,0 +1,144 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --text-muted: #555555;
+    --font-logo: 'Aoboshi One', serif;
+    --font-jp: 'Noto Sans JP', sans-serif;
+    --font-en: 'Space Grotesk', sans-serif;
+    --font-cezanne: "FOT-Cezanne Pro", "FOT-セザンヌ Pro", "Cezanne", "セザンヌ", var(--font-jp);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-cezanne);
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.logo {
+    font-family: var(--font-logo);
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    user-select: none;
+}
+
+.hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 0 8%;
+}
+
+.hero-inner {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.hero-title {
+    font-size: 9rem;
+    font-weight: 900;
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+    text-align: left;
+}
+
+.hero-title .line {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.scroll-down {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: transform 0.3s var(--transition-ease);
+}
+
+.scroll-line {
+    width: 7px;
+    height: 63px;
+    background-color: var(--text-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.scroll-text {
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: lowercase;
+    user-select: none;
+}
+
+.about-section {
+    padding: 140px 8%;
+    background-color: var(--bg-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.about-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.about-title {
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+
+.about-content {
+    font-size: 2rem;
+    line-height: 2;
+    color: var(--text-color);
+    max-width: 1000px;
+}
+
+.about-content p {
+}
+
+.about-content p:last-child {
+    margin-bottom: 0;
+}

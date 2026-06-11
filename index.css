@@ -1,55 +1,356 @@
-/* ─────────────────────────────────────────
-   Reset
-───────────────────────────────────────── */
-*, *::before, *::after {
-    box-sizing: border-box;
+/* 自前リセットCSS */
+* {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
-/* ─────────────────────────────────────────
-   Base
-───────────────────────────────────────── */
+:root {
+    --bg-color: #050505;
+    --text-color: #ffffff;
+    --text-muted: #888888;
+    --portal-color: #ffffff;
+    --font-jp: 'Noto Sans JP', sans-serif;
+    --font-en: 'Space Grotesk', sans-serif;
+    --marker-accent: #ffffff;
+    --grid-color: rgba(255, 255, 255, 0.03);
+    --border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* この手法自体は知ってたけど使うのはこれで二度目かも（自語り） */
+body.light-theme {
+    --bg-color: #ffffff;
+    --text-color: #050505;
+    --text-muted: #666666;
+    --portal-color: #050505;
+    --marker-accent: #050505;
+    --grid-color: rgba(0, 0, 0, 0.03);
+    --border-color: rgba(0, 0, 0, 0.15);
+}
+
 body {
-    background: #f5f2ec;
-    color: #1a1a1a;
-    font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
-    min-height: 200vh;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-jp);
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.8s cubic-bezier(0.25, 1, 0.5, 1), color 0.8s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* ─────────────────────────────────────────
-   Hero
-───────────────────────────────────────── */
-.hero {
-    min-height: 100svh;
+/* Hero */
+#hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: flex-end;
+    padding: 10vh 8%;
+    z-index: 2;
+    overflow: hidden;
+}
+
+/* 背景用グリッド */
+#hero::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image: 
+        linear-gradient(var(--grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: center center;
+    z-index: 0;
+    pointer-events: none;
+    transition: background-image 0.8s ease;
+}
+
+/*  正円のクリップ（index.htmlを参照） */
+.hero-clip-bg {
+    position: absolute;
+    top: -70vh;
+    right: -63vh;
+    width: 130vh;
+    height: 130vh;
+    border-radius: 50%;
+    background-color: var(--portal-color);
+    z-index: 1;
+    pointer-events: none;
+    transition: background-color 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* クリップされた中のデザイン */
+.hero-clip-bg::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background-image: 
+        linear-gradient(var(--bg-color) 1.5px, transparent 1.5px),
+        linear-gradient(90deg, var(--bg-color) 1.5px, transparent 1.5px);
+    background-size: 50px 50px;
+    background-position: center center;
+    opacity: 0.08;
+    transition: background-image 0.8s ease;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 5;
+    max-width: 900px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    padding: 6vw;
+    align-items: flex-start;
+    gap: 1.5rem;
+    pointer-events: auto;
 }
 
-.hero h1 {
-    font-size: clamp(2.4rem, 6vw, 7rem);
-    font-weight: 900;
-    line-height: 1.25;
-    letter-spacing: -0.02em;
-}
-
-/* text-reveal が inline になるよう上書き */
-.hero h1 .marker-wrapper {
-    display: inline;
-}
-.hero h1 .marker-text {
-    display: inline;
-}
-
-/* ─────────────────────────────────────────
-   aruiha ラベル
-───────────────────────────────────────── */
-.ak-label {
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
-    opacity: 0.35;
+.hero-tagline {
+    font-family: var(--font-en);
+    font-size: 0.85rem;
     text-transform: uppercase;
-    margin-bottom: 0.6rem;
+    letter-spacing: 0.4em;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    opacity: 0.8;
+    transition: color 0.8s ease;
+}
+
+.hero-title {
+    font-size: 2.8rem;
+    font-weight: 900;
+    line-height: 1.5;
+    letter-spacing: -0.02em;
+    text-align: left;
+}
+
+@media (min-width: 768px) {
+    .hero-title {
+        font-size: 4.2rem;
+    }
+}
+
+/* 特筆すべき点がないテーマスイッチ */
+.theme-switch {
+    position: fixed;
+    top: 40px;
+    right: 40px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    transition: border-color 0.5s, transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.theme-switch:hover {
+    transform: scale(1.1) rotate(180deg);
+}
+
+.theme-switch-inner {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--text-color) 50%, transparent 50%);
+    border: 1px solid var(--text-color);
+    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.5s, background 0.5s;
+}
+
+body.light-theme .theme-switch-inner {
+    transform: rotate(180deg);
+}
+
+/* スクロールダウン */
+.scroll-indicator {
+    position: absolute;
+    bottom: 40px;
+    right: 8%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    z-index: 5;
+    font-family: var(--font-en);
+    cursor: pointer;
+}
+
+.scroll-line-container {
+    width: 1px;
+    height: 80px;
+    background-color: var(--border-color);
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.5s;
+}
+
+.scroll-line-active {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), var(--text-color), rgba(255, 255, 255, 0));
+    animation: scrollLineAnim 2.2s cubic-bezier(0.65, 0.05, 0.36, 1) infinite;
+}
+
+.scroll-text {
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 500;
+    animation: pulseText 2s ease-in-out infinite;
+    transition: color 0.5s;
+}
+
+@keyframes scrollLineAnim {
+    0% {
+        transform: translateY(-100%);
+    }
+    70%, 100% {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes pulseText {
+    0%, 100% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 0.9;
+    }
+}
+
+/* コンテンツ */
+.content-section {
+    padding: 120px 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.section-num {
+    font-family: var(--font-en);
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    display: block;
+    transition: color 0.5s;
+}
+
+.section-text {
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    color: var(--text-color);
+    transition: color 0.5s;
+}
+
+/* About用のもの */
+.about-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    margin-top: 2rem;
+}
+
+@media (min-width: 768px) {
+    .about-grid {
+        grid-template-columns: 1fr 1.3fr;
+        gap: 4rem;
+    }
+}
+
+.about-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.stat-box {
+    border-left: 2px solid var(--text-color);
+    padding-left: 1.5rem;
+    transition: border-color 0.8s;
+}
+
+.stat-num {
+    font-family: var(--font-en);
+    font-size: 4rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.about-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.about-desc {
+    font-size: 1.15rem;
+    line-height: 2;
+    color: var(--text-color);
+}
+
+.about-meta {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px dashed var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: border-color 0.8s;
+}
+
+.meta-item {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    transition: color 0.8s;
+}
+
+.meta-bullet {
+    font-family: var(--font-en);
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.divider {
+    width: 100%;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 0 auto;
+    max-width: 1000px;
+    transition: background-color 0.5s;
+}
+
+/* フッター */
+footer {
+    padding: 60px 2rem;
+    text-align: center;
+    font-family: var(--font-en);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    border-top: 1px solid var(--border-color);
+    transition: border-color 0.5s, color 0.5s;
 }

@@ -1,7 +1,8 @@
+/**
+ * TextRevealManager
+ * A generic utility to reveal highlight markers on scroll.
+ */
 (function() {
-    /**
-     * ライブラリ専用のコアCSSスタイル
-     */
     const css = `
         .marker-wrapper {
             position: relative;
@@ -28,72 +29,42 @@
         }
     `;
 
-    /**
-     * スタイルシートの動的インジェクション関数
-     */
     const injectCSS = () => {
-        const styleId = 'independent-text-reveal-styles';
-        if (document.getElementById(styleId)) return;
+        if (document.getElementById('text-reveal-styles')) return;
         const style = document.createElement('style');
-        style.id = styleId;
+        style.id = 'text-reveal-styles';
         style.textContent = css;
         document.head.appendChild(style);
     };
 
-    /**
-     * テキスト展開管理クラス
-     */
-    class IndependentTextRevealManager {
+    class TextRevealManager {
         constructor() {
             this.markers = [];
-            this.updateBound = this.update.bind(this);
             injectCSS();
             this.init();
         }
 
-        /**
-         * 初期化メソッド
-         */
         init() {
-            this.rescan();
-
-            // ネイティブのウィンドウイベントに更新処理をバインド
-            window.addEventListener('scroll', this.updateBound);
-            window.addEventListener('resize', this.updateBound);
-        }
-
-        /**
-         * .marker-wrapper を再スキャンして参照を更新する
-         * aruiha などで DOM が差し替わった後に呼ぶ
-         */
-        rescan() {
             const elements = document.querySelectorAll('.marker-wrapper');
-            
             this.markers = Array.from(elements).map(el => {
-                // アクセントカラーを取得
                 const color = el.getAttribute('data-marker-color') || '#000';
                 el.style.setProperty('--accent-color', color);
-                
-                // 各要素のトリガー位置
-                const trigger = parseFloat(el.getAttribute('data-marker-trigger'));
-                
                 return {
                     el,
-                    trigger: isNaN(trigger) ? 0.5 : trigger
+                    trigger: parseFloat(el.getAttribute('data-marker-trigger')) || 0.5
                 };
             });
 
-            // 再スキャン後に即座に位置判定
+            // Set up scroll and resize listeners using standard browser APIs
+            const updateHandler = () => this.update();
+            window.addEventListener('scroll', updateHandler, { passive: true });
+            window.addEventListener('resize', updateHandler, { passive: true });
+            
             this.update();
         }
 
-        /**
-         * スクロールおよびリサイズ時に呼び出される座標計算・スタイル更新メソッド
-         */
         update() {
-            // ネイティブのビューポート高さを参照
             const vh = window.innerHeight;
-            
             this.markers.forEach(marker => {
                 const rect = marker.el.getBoundingClientRect();
                 const center = rect.top + rect.height / 2;
@@ -107,30 +78,15 @@
                 } else {
                     const range = startThreshold - targetPoint;
                     const progress = ((startThreshold - center) / range) * 100;
-                    
                     marker.el.style.setProperty('--marker-width', `${Math.min(100, Math.max(0, progress))}%`);
                 }
             });
         }
-
-        /**
-         * クリーンアップメソッド
-         */
-        destroy() {
-            window.removeEventListener('scroll', this.updateBound);
-            window.removeEventListener('resize', this.removeEventListener);
-        }
     }
 
-    // DOMの構築ステータスに応じて
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            window._textRevealInstance = new IndependentTextRevealManager();
-        });
+        document.addEventListener('DOMContentLoaded', () => new TextRevealManager());
     } else {
-        window._textRevealInstance = new IndependentTextRevealManager();
+        new TextRevealManager();
     }
-
-    // 外部からの操作を可能にする
-    window.IndependentTextRevealManager = IndependentTextRevealManager;
 })();

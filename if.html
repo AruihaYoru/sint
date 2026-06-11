@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>無題</title>
+    
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="index.css">
+</head>
+<body class="light-theme">
+
+    <!-- テーマスイッチ -->
+    <button class="theme-switch" id="theme-toggle" aria-label="Toggle Theme">
+        <div class="theme-switch-inner"></div>
+    </button>
+
+    <!-- ヒーローセクション -->
+    <section id="hero">
+        <!-- 正円でクリップする -->
+        <div class="hero-clip-bg"></div>
+
+        <div class="hero-content">
+            <div class="hero-tagline">SINT // THE MATHEMATICAL CRUCIBLE</div>
+            
+            <h1 class="hero-title">
+                <span class="hero-marker-wrapper" data-marker-color="var(--marker-accent)" data-marker-delay="0.6" data-marker-duration="0.7s">
+                    <span class="hero-marker-text">全ての</span>
+                </span><br>
+                <span class="hero-marker-wrapper" data-marker-color="var(--marker-accent)" data-marker-delay="1.1" data-marker-duration="0.7s">
+                    <span class="hero-marker-text">狂気的な才能を、</span>
+                </span><br>
+                <span class="hero-marker-wrapper" data-marker-color="var(--marker-accent)" data-marker-delay="1.6" data-marker-duration="0.7s">
+                    <span class="hero-marker-text">数学者にしてみせる。</span>
+                </span>
+            </h1>
+        </div>
+
+        <!-- スクロールダウン用のバー -->
+        <div class="scroll-indicator" onclick="window.scrollTo({top: window.innerHeight, behavior: 'smooth'})">
+            <div class="scroll-line-container">
+                <div class="scroll-line-active"></div>
+            </div>
+            <span class="scroll-text">Scroll</span>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <section class="content-section">
+        <span class="section-num">01 / ABOUT US</span>
+        <h2 class="section-text" style="font-size: 2.2rem; margin-bottom: 3rem;">Scratch数論研究会 (Sint)</h2>
+        
+        <div class="about-grid">
+            <div class="about-left">
+                <div class="stat-box">
+                    <div class="stat-num">#01</div>
+                    <div class="stat-label">Scratch「数論」検索順位</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-num">#01</div>
+                    <div class="stat-label">Google「Scratch 数論」検索順位</div>
+                </div>
+            </div>
+            
+            <div class="about-right">
+                <p class="about-desc">
+                    Sintは、周囲の支援が得られず孤立しながらも、
+                    <span class="marker-wrapper" data-marker-color="var(--marker-accent)" data-marker-trigger="0.6">
+                        <span class="marker-text">自力で卓越した研究環境を構築し</span>
+                    </span>
+                    自らの問いを探求し続ける「孤独な才能」たちのために作られた公式研究機関です。
+                </p>
+                <p class="about-desc" style="margin-top: 1.5rem;">
+                    私たちは現在、研究のための厳格な試験場として、また肥沃な人材発掘と育成のために、
+                    <span class="marker-wrapper" data-marker-color="var(--marker-accent)" data-marker-trigger="0.7">
+                        <span class="marker-text">審査制のScratchスタジオを公式拠点</span>
+                    </span>
+                    として運用しています。
+                </p>
+                
+                <div class="about-meta">
+                    <div class="meta-item">
+                        <span class="meta-bullet">01</span>
+                        <span>阿部和広先生来歴あり。</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-bullet">02</span>
+                        <span>Scratchチーム本部専門スタッフにSINTに関する相談も回っています。</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <!-- コピーライトとか...? -->
+    </footer>
+
+    <!-- 特化ライブラリと汎用ライブラリ -->
+    <script src="./js/hero-reveal.js"></script>
+    <script src="./js/text-reveal.js"></script>
+
+    <script>
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+        });
+    </script>
+
+</body>
+</html>
