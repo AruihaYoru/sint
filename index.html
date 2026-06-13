@@ -1,5 +1,236 @@
-<meta charset="UTF-8">
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>無題</title>
+    
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="index.css">
+</head>
+<body class="light-theme">
 
-<a href="./concept.html">Canvaのやつを完全に模倣する</a>：<p>Canvaのやつを9割9分模倣できたものです</p><br><br><br><br>
-<a href="./if.html">デザインはすべて自分でやりたいっていうクライアントの要求を忘れていた結果生まれてしまったもの（まあ　だいぶ「キラキラ」の域に触れてしまってるけど　結局最終稿になると元からあった可動部の80%ほどがなくなるのが私のウェブデザインですから）</a>：<p>セザンヌじゃないねよく考えたら　ごめんなさい　直しときます。ストイックなものにする作業は簡単だと思います</p><br>
-<h3>どっちもaboutまでしかできてません！！！</h3>
+    <!-- テーマスイッチ -->
+    <button class="theme-switch" id="theme-toggle" aria-label="Toggle Theme">
+        <div class="theme-switch-inner"></div>
+    </button>
+
+    <!-- ヒーローセクション -->
+    <section id="hero">
+        <!-- 正円でクリップ -->
+        <div class="hero-clip-bg"></div>
+
+        <div class="hero-content">
+            <div class="hero-tagline">SINT // THE MATHEMATICAL CRUCIBLE</div>
+            
+            <h1 class="hero-title">
+                <span class="hero-marker-wrapper" data-marker-color="var(--marker-accent)" data-marker-delay="0.6" data-marker-duration="0.7s">
+                    <span class="hero-marker-text">全ての</span>
+                </span><br>
+                <span class="hero-marker-wrapper" data-marker-color="var(--marker-accent)" data-marker-delay="1.1" data-marker-duration="0.7s">
+                    <span class="hero-marker-text">狂気的な才能を、</span>
+                </span><br>
+                <span class="hero-marker-wrapper" data-marker-color="var(--marker-accent)" data-marker-delay="1.6" data-marker-duration="0.7s">
+                    <span class="hero-marker-text">数学者にしてみせる。</span>
+                </span>
+            </h1>
+        </div>
+
+        <!-- スクロールダウン用のバー -->
+        <div class="scroll-indicator" onclick="window.scrollTo({top: window.innerHeight, behavior: 'smooth'})">
+            <div class="scroll-line-container">
+                <div class="scroll-line-active"></div>
+            </div>
+            <span class="scroll-text">Scroll</span>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <section class="content-section">
+        <span class="section-num">01 / ABOUT US</span>
+        <h2 class="section-text" style="font-size: 2.2rem; margin-bottom: 3rem;">Scratch数論研究会 (Sint)</h2>
+        
+        <div class="about-grid">
+            <div class="about-left">
+                <div class="stat-box">
+                    <div class="stat-num">#01</div>
+                    <div class="stat-label">Scratch「数論」検索順位</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-num">#01</div>
+                    <div class="stat-label">Google「Scratch 数論」検索順位</div>
+                </div>
+            </div>
+            
+            <div class="about-right">
+                <p class="about-desc">
+                    Sintは、周囲の支援が得られず孤立しながらも、
+                    <span class="marker-wrapper" data-marker-color="var(--marker-accent)" data-marker-trigger="0.6">
+                        <span class="marker-text">自力で卓越した研究環境を構築し</span>
+                    </span>
+                    自らの問いを探求し続ける「孤独な才能」たちのために作られた公式研究機関です。
+                </p>
+                <p class="about-desc" style="margin-top: 1.5rem;">
+                    私たちは現在、研究のための厳格な試験場として、また肥沃な人材発掘と育成のために、
+                    <span class="marker-wrapper" data-marker-color="var(--marker-accent)" data-marker-trigger="0.7">
+                        <span class="marker-text">審査制のScratchスタジオを公式拠点</span>
+                    </span>
+                    として運用しています。
+                </p>
+                
+                <div class="about-meta">
+                    <div class="meta-item">
+                        <span class="meta-bullet">01</span>
+                        <span>阿部和広先生来歴あり。</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-bullet">02</span>
+                        <span>Scratchチーム本部専門スタッフにSINTに関する相談も回っています。</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <section class="content-section history-section">
+        <span class="section-num reveal-up">02 / HISTORY</span>
+        <h2 class="section-text reveal-up" style="font-size: 2.2rem; margin-bottom: 4rem;" data-reveal-delay="0.1s">軌跡 — 創設の原点</h2>
+
+        <!-- 1こめ -->
+        <div class="history-block split-layout">
+            <div class="history-text reveal-up">
+                <h3 class="history-subtitle">01. 創設者の視点 / Founder's View</h3>
+                <p class="history-desc">
+                    創設者 ofutoniniru（大川航平）は、当時「指導教官を得ること」を強く渇望していた。私は数理の翼・大学付属プログラム・研究室所属といった制度的枠組みに属しておらず、そのために
+                    アマチュア研究者と同列に扱われることへの強い危機感を抱いていた。
+                </p>
+                <p class="history-desc" style="margin-top: 1.5rem;">
+                    この危機感は、単なる承認欲求ではなく、
+                    "研究者としての文脈を持たないまま中高生が本気で論文を出しても、正しく評価されない"
+                    という問題への認識に基づいていた。
+                </p>
+            </div>
+            <div class="history-image-wrapper reveal-up" data-reveal-delay="0.1s">
+                <a href="https://scratch.mit.edu/projects/1322371970/" target="_blank" rel="noopener noreferrer">
+                    <img src="static/sint_5.jpg" alt="d-ランダム正則グラフにおけるツイスト伊原L関数の一様零点なし環状領域 by ofutoniniru" class="history-image">
+                </a>
+                <div class="image-metadata">
+                   <a href="https://scratch.mit.edu/projects/1322371970/" target="_blank" rel="noopener noreferrer">d-ランダム正則グラフにおけるツイスト伊原L関数の一様零点なし環状領域</a> by ofutoniniru
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 2 -->
+        <div class="history-block split-layout">
+            <div class="history-text reveal-up">
+                <h3 class="history-subtitle">02. 既存制度の限界 / Limitations of Systems</h3>
+                <p class="history-desc">
+                    当時、既存の中高生向け科学プログラム（いわゆる科学オリンピック系・研究体験系）は、いずれも
+                    「安全で既知の領域を扱う」ことを前提とした制度であった。
+                </p>
+                <ul class="history-limit-list">
+                    <li class="reveal-up" data-reveal-delay="0.1s">
+                        <span class="list-bullet">—</span>
+                        <span>親の同意を必須とし、</span>
+                    </li>
+                    <li class="reveal-up" data-reveal-delay="0.15s">
+                        <span class="list-bullet">—</span>
+                        <span>取り扱うテーマは既知の科学領域に限定され、</span>
+                    </li>
+                    <li class="reveal-up" data-reveal-delay="0.2s">
+                        <span class="list-bullet">—</span>
+                        <span>参加者は"安全に管理された枠内"に置かれ、</span>
+                    </li>
+                    <li class="reveal-up" data-reveal-delay="0.25s">
+                        <span class="list-bullet">—</span>
+                        <span>新発見や独自研究を制度的に要求しない（むしろ強く推奨しない）構造だった。</span>
+                    </li>
+                </ul>
+                <p class="history-desc reveal-up" style="margin-top: 2rem;" data-reveal-delay="0.3s">
+                    さらに、これらのプログラムは「未知の領域に踏み込む学生」や「独自の研究文化を形成しようとする学生」を、よほどの例外を除いて制度的に遠ざける傾向があった。
+                </p>
+                <p class="history-desc reveal-up" style="margin-top: 1.5rem;" data-reveal-delay="0.35s">
+                    その結果、既存制度の外で独自研究を行う学生は、
+                    文脈を持たない"孤立した点"として扱われる
+                    という構造的問題が生じていた。
+                </p>
+            </div>
+            <div class="history-image-stack reveal-up" data-reveal-delay="0.1s">
+                <div class="stack-item">
+                    <a href="https://scratch.mit.edu/projects/1320674239/" target="_blank" rel="noopener noreferrer">
+                        <img src="static/sint_2.jpg" alt="Schwarzschild Black Hole by 1A291109A6" class="history-image">
+                    </a>
+                    <div class="image-metadata">
+                        <a href="https://scratch.mit.edu/projects/1320674239/" target="_blank" rel="noopener noreferrer">Schwarzschild Black Hole</a> by 1A291109A6
+                    </div>
+                </div>
+                <div class="stack-item">
+                    <a href="https://scratch.mit.edu/projects/797867283/" target="_blank" rel="noopener noreferrer">
+                        <img src="static/sint_3.jpg" alt="データ解析ツール by rinkuuddo" class="history-image">
+                    </a>
+                    <div class="image-metadata font-condensed">
+                        <a href="https://scratch.mit.edu/projects/797867283/" target="_blank" rel="noopener noreferrer">データ解析ツール(並べ替え､最大値...)</a> by rinkuuddo
+                    </div><!-- 省略ごめんなさい！！！ -->
+                </div>
+                <div class="stack-item">
+                    <a href="https://scratch.mit.edu/projects/1213061413/" target="_blank" rel="noopener noreferrer">
+                        <img src="static/sint_4.jpg" alt="DKA法でn次方程式を数値的に解く by nyabimo" class="history-image">
+                    </a>
+                    <div class="image-metadata">
+                        <a href="https://scratch.mit.edu/projects/1213061413/" target="_blank" rel="noopener noreferrer">DKA法でn次方程式を数値的に解く</a> by nyabimo
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-section history-section">
+        <!-- part3_制度圏の創設 -->
+        <div class="history-block split-layout">
+            <div class="history-text reveal-up">
+                <h3 class="history-subtitle">03. 制度圏の創設 / Conception of SINT</h3>
+                <p class="history-desc">
+                    こうした問題意識から、私は
+                    「研究者が研究者として扱われるための制度圏」
+                    を Scratch 内に創設する構想を立てた。
+                </p>
+                <p class="history-desc" style="margin-top: 1.5rem; font-weight: 700;">
+                    これが後に SINT（Scratch Institute of Number Theory） と呼ばれることになる。
+                </p>
+            </div>
+            <div class="history-image-wrapper reveal-up" data-reveal-delay="0.1s">
+                <a href="https://scratch.mit.edu/projects/1285792475/" target="_blank" rel="noopener noreferrer">
+                    <img src="static/sint_1.jpg" alt="【入会審査あり】scratch数論研究会(SINT)-新規募集(2026年分) by ofutoniniru" class="history-image">
+                </a>
+                <div class="image-metadata">
+                     <a href="https://scratch.mit.edu/projects/1285792475/" target="_blank" rel="noopener noreferrer">【入会審査あり】scratch数論研究会(SINT)-新規募集(2026年分)</a> by ofutoniniru
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <!-- コピーライトとか...? -->
+    </footer>
+
+    <!-- 特化ライブラリと汎用ライブラリ -->
+    <script src="./js/hero-reveal.js"></script>
+    <script src="./js/text-reveal.js"></script>
+    <script src="./js/scroll-animation.js"></script>
+
+    <script>
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+        });
+    </script>
+
+</body>
+</html>

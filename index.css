@@ -6,26 +6,26 @@
 }
 
 :root {
-    --bg-color: #050505;
+    --bg-color: #000000;
     --text-color: #ffffff;
-    --text-muted: #888888;
+    --text-muted: rgba(255, 255, 255, 0.5);
     --portal-color: #ffffff;
     --font-jp: 'Noto Sans JP', sans-serif;
     --font-en: 'Space Grotesk', sans-serif;
     --marker-accent: #ffffff;
-    --grid-color: rgba(255, 255, 255, 0.03);
-    --border-color: rgba(255, 255, 255, 0.15);
+    --grid-color: rgba(255, 255, 255, 0.05);
+    --border-color: #ffffff;
 }
 
 /* この手法自体は知ってたけど使うのはこれで二度目かも（自語り） */
 body.light-theme {
     --bg-color: #ffffff;
-    --text-color: #050505;
-    --text-muted: #666666;
-    --portal-color: #050505;
-    --marker-accent: #050505;
-    --grid-color: rgba(0, 0, 0, 0.03);
-    --border-color: rgba(0, 0, 0, 0.15);
+    --text-color: #000000;
+    --text-muted: rgba(0, 0, 0, 0.5);
+    --portal-color: #000000;
+    --marker-accent: #000000;
+    --grid-color: rgba(0, 0, 0, 0.05);
+    --border-color: #000000;
 }
 
 body {
@@ -354,3 +354,195 @@ footer {
     border-top: 1px solid var(--border-color);
     transition: border-color 0.5s, color 0.5s;
 }
+
+/* History Section */
+.history-section {
+    position: relative;
+}
+
+.history-block {
+    margin-bottom: 8rem;
+}
+
+.history-block:last-of-type {
+    margin-bottom: 2rem;
+}
+
+[class*="reveal-"] {
+    opacity: 0;
+    transition-property: opacity, transform, clip-path;
+    transition-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+    will-change: opacity, transform;
+}
+
+.reveal-up {
+    transform: translateY(40px);
+}
+
+.reveal-scale {
+    transform: scale(0.95) translateY(20px);
+}
+
+[class*="reveal-"].is-revealed {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    clip-path: inset(0 0 0 0);
+}
+
+.split-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 5rem;
+    align-items: flex-start;
+}
+
+.history-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.history-subtitle {
+    font-family: var(--font-en);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    transition: color 0.5s;
+}
+
+.history-desc {
+    font-size: 1.15rem;
+    line-height: 2;
+    color: var(--text-color);
+    transition: color 0.5s;
+}
+
+.history-image-wrapper {
+    position: relative;
+}
+
+.history-image-wrapper a {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+}
+
+.history-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), filter 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    filter: grayscale(100%);
+}
+
+.history-image-wrapper a:hover .history-image {
+    transform: scale(1.03);
+    filter: grayscale(0%);
+}
+
+
+
+/* Part 2 Styles */
+.history-text-full {
+    max-width: 800px;
+    margin-bottom: 0;
+}
+
+.history-limit-list {
+    list-style: none;
+    margin-top: 2.5rem;
+    margin-bottom: 2.5rem;
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+@media (min-width: 1040px) {
+    .history-limit-list {
+        margin-left: -3rem; /* ビューポートからはみ出させたいんだけど　どこにoverflow:hiddenついてるのかわからん */
+    }
+}
+
+.history-limit-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--text-color);
+    transition: color 0.5s;
+}
+
+.list-bullet {
+    font-family: var(--font-en);
+    color: var(--text-muted);
+    font-weight: 700;
+    transition: color 0.5s;
+}
+
+/* 画像スタックのデザインが本当に思いつかないなあ */
+.history-image-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.stack-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.history-image-stack a {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+}
+
+.history-image-stack img {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: grayscale(100%);
+    transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), filter 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.history-image-stack img:hover {
+    transform: scale(1.02);
+    filter: grayscale(0%);
+}
+
+.image-metadata {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--text-muted);
+    transition: color 0.5s;
+}
+
+.image-metadata a {
+    color: var(--text-color);
+    text-decoration: underline;
+    transition: color 0.5s;
+}
+
+.font-condensed {
+    font-size: 0.8rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .split-layout {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+}
+
+
+
+
+
