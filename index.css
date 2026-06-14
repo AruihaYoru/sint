@@ -370,7 +370,7 @@ footer {
 
 [class*="reveal-"] {
     opacity: 0;
-    transition-property: opacity, transform, clip-path;
+    transition-property: opacity, transform;
     transition-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
     will-change: opacity, transform;
 }
@@ -386,14 +386,18 @@ footer {
 [class*="reveal-"].is-revealed {
     opacity: 1;
     transform: translateY(0) scale(1);
-    clip-path: inset(0 0 0 0);
 }
 
 .split-layout {
     display: grid;
-    grid-template-columns: 1fr 1.5fr;
+    grid-template-columns: 1fr 0.7fr;
     gap: 5rem;
     align-items: flex-start;
+}
+
+.split-layout-subspicies{
+    display: block;
+    margin-bottom: 3em;
 }
 
 .history-text {
@@ -439,8 +443,8 @@ footer {
 }
 
 .history-image-wrapper a:hover .history-image {
-    transform: scale(1.03);
-    filter: grayscale(0%);
+    transform: scale(1.01);
+    filter: grayscale(50%);
 }
 
 
@@ -463,7 +467,7 @@ footer {
 
 @media (min-width: 1040px) {
     .history-limit-list {
-        margin-left: -3rem; /* ビューポートからはみ出させたいんだけど　どこにoverflow:hiddenついてるのかわからん */
+        margin-left: -8rem;
     }
 }
 
@@ -512,8 +516,9 @@ footer {
 }
 
 .history-image-stack img:hover {
-    transform: scale(1.02);
-    filter: grayscale(0%);
+    transform: scale(1.01);
+    filter: grayscale(50%);
+    /* CSS動機：grayscale(0%)まで上げてしまうと、そこで終わってしまう、と感じたので50%で止めています。  */
 }
 
 .image-metadata {
@@ -534,7 +539,6 @@ footer {
     font-size: 0.8rem;
 }
 
-/* Responsive adjustments */
 @media (max-width: 900px) {
     .split-layout {
         grid-template-columns: 1fr;
