@@ -1,0 +1,34 @@
+{
+    "brand": "Scratch Institute of Number Theory",
+    "copyright": "SINT. All rights reserved.",
+    "columns": [
+        {
+            "title": "ABOUT",
+            "links": [
+                { "label": "SINTについて", "href": "index.html#hero" },
+                { "label": "History", "href": "index.html#history" },
+                { "label": "Chronicle (設立の記録)", "href": "chronicle.html" },
+                { "label": "制度圏の創設", "href": "index.html#conception" }
+            ]
+        },
+        {
+            "title": "COMMUNITY",
+            "links": [
+                { "label": "Scratchスタジオ", "href": "https://scratch.mit.edu/studios/36783305/", "external": true },
+                { "label": "入会審査 (TESTAMENT)", "href": "apply.html" }
+            ]
+        },
+        {
+            "title": "RESOURCES",
+            "links": [
+                { "label": "新規募集ページ", "href": "https://scratch.mit.edu/projects/1285792475/", "external": true }
+            ]
+        },
+        {
+            "title": "LEGAL",
+            "links": [
+                { "label": "Scratch", "href": "https://scratch.mit.edu/", "external": true }
+            ]
+        }
+    ]
+}

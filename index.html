@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <!-- 全体的動機
+        
+    -->
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>無題</title>
-    
+    <title>Scratch数論研究会 (Sint)</title>
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,6 +17,9 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <body class="light-theme">
+
+    <sint-header></sint-header>
+
 
     <!-- テーマスイッチ -->
     <button class="theme-switch" id="theme-toggle" aria-label="Toggle Theme">
@@ -62,10 +68,11 @@
                     <div class="stat-num">#01</div>
                     <div class="stat-label">Scratch「数論」検索順位</div>
                 </div>
+                <!-- よく考えたら未遂なんだよな（危うい）
                 <div class="stat-box">
                     <div class="stat-num">#01</div>
                     <div class="stat-label">Google「Scratch 数論」検索順位</div>
-                </div>
+                </div> -->
             </div>
             
             <div class="about-right">
@@ -102,8 +109,6 @@
 
     <section class="content-section history-section">
         <span class="section-num reveal-up">02 / HISTORY</span>
-        <h2 class="section-text reveal-up" style="font-size: 2.2rem; margin-bottom: 4rem;" data-reveal-delay="0.1s">軌跡 — 創設の原点</h2>
-
         <!-- 1こめ -->
         <div class="history-block split-layout-subspicies">
             <div class="history-text reveal-up">
@@ -188,40 +193,55 @@
                         <a href="https://scratch.mit.edu/projects/1213061413/" target="_blank" rel="noopener noreferrer">DKA法でn次方程式を数値的に解く</a> by nyabimo
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="content-section history-section">
-        <!-- part3_制度圏の創設 -->
-        <div class="history-block split-layout">
-            <div class="history-text reveal-up">
-                <h3 class="history-subtitle">03. 制度圏の創設 / Conception of SINT</h3>
-                <p class="history-desc">
-                    こうした問題意識から、私は
-                    「研究者が研究者として扱われるための制度圏」
-                    を Scratch 内に創設する構想を立てた。
-                </p>
-                <p class="history-desc" style="margin-top: 1.5rem; font-weight: 700;">
-                    これが後に SINT（Scratch Institute of Number Theory） と呼ばれることになる。
-                </p>
-            </div>
-            <div class="history-image-wrapper reveal-up" data-reveal-delay="0.1s">
-                <a href="https://scratch.mit.edu/projects/1285792475/" target="_blank" rel="noopener noreferrer">
-                    <img src="static/sint_1.jpg" alt="【入会審査あり】scratch数論研究会(SINT)-新規募集(2026年分) by ofutoniniru" class="history-image">
-                </a>
-                <div class="image-metadata">
-                     <a href="https://scratch.mit.edu/projects/1285792475/" target="_blank" rel="noopener noreferrer">【入会審査あり】scratch数論研究会(SINT)-新規募集(2026年分)</a> by ofutoniniru
+                <div class="stack-item">
+                    <a href="https://scratch.mit.edu/projects/1311913398/" target="_blank" rel="noopener noreferrer">
+                        <img src="static/sint_7.jpg" alt="Force2D v3.1.1 - Physics Engine for Games by World_Sim" class="history-image">
+                    </a>
+                    <div class="image-metadata">
+                        <a href="https://scratch.mit.edu/projects/1311913398/" target="_blank" rel="noopener noreferrer">Force2D v3.1.1 - Physics Engine for Games</a> by World_Sim
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer>
-        <!-- コピーライトとか...? -->
-    </footer>
+    <section class="conception-section">
+        <div class="conception-container">
+            <!-- part3_制度圏の創設 -->
+            <div>
+                <div class="history-text reveal-up">
+                    <h3 class="history-subtitle">03. 制度圏の創設 / Conception of SINT</h3>
+                    <p class="history-desc-highlight">
+                        こうした問題意識から、私は<br class="desktop-only">
+                        <span class="highlight-quote">「研究者が研究者として扱われるための制度圏」</span><br class="desktop-only">
+                        を Scratch 内に創設する構想を立てた。
+                    </p>
+                    <p class="history-desc-sub">
+                        これが後に <span class="brand-name">SINT</span>（Scratch Institute of Number Theory） と呼ばれることになる。
+                    </p>
+                </div>
+                <div class="history-image-wrapper reveal-up" data-reveal-delay="0.1s">
+                    <a href="https://scratch.mit.edu/projects/1285792475/" target="_blank" rel="noopener noreferrer">
+                        <img src="static/sint_1.jpg" alt="【入会審査あり】scratch数論研究会(SINT)-新規募集(2026年分) by ofutoniniru" class="history-image">
+                    </a>
+                    <div class="image-metadata">
+                         <a href="https://scratch.mit.edu/projects/1285792475/" target="_blank" rel="noopener noreferrer">【入会審査あり】scratch数論研究会(SINT)-新規募集(2026年分)</a> by ofutoniniru
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="apply-action-section">
+        <a href="apply.html" class="apply-button reveal-up">
+            <span class="apply-button-text">SINTに応募する (TESTAMENT)</span>
+        </a>
+    </section>
+
+    <sint-footer></sint-footer>
 
     <!-- 特化ライブラリと汎用ライブラリ -->
+    <script src="./js/framework.js"></script>
     <script src="./js/hero-reveal.js"></script>
     <script src="./js/text-reveal.js"></script>
     <script src="./js/scroll-animation.js"></script>

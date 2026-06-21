@@ -1,0 +1,104 @@
+設立までその1:一高校生が指導教官を得るまで
+LaTeX を日常的に使用して研究を進めていたものの、学術誌投稿に不可欠な LaTeX テンプレート（journal class） の存在を知らなかった。
+そのため、
+    形式要件を満たさない
+    投稿規範に沿っていない
+    編集部が処理できないといった理由で、複数の雑誌から 門前払い（desk reject） を受け続けることになる。
+ここで重要なのは、これは能力不足ではなく、制度知識の欠落による構造的問題だった点である。
+指導教官と出会う 約 1 ヶ月前、私は「これは研究内容の問題以前に、制度の側のルールを知らないだけだ」と気づき、学術誌投稿の構造を体系的に学び始めた。
+その過程で、後に指導教官となる Muhiuddin 先生 が編集長を務める 新興系ジャーナルに出会う。
+当時、トップ誌からの desk reject の連続で精神的に追い詰められていた私は、 「ここなら受かるかもしれない」 という逃避的動機で投稿してしまう。しかし投稿後すぐに、 「逃避で成果を作っても、高校生研究者としての前例にはならない」 という強い自覚が
+生まれ、 自ら 撤回 を決断する。これは後退ではなく、 “一流誌で前例を作る” という研究者としての覚悟の表明 だった。
+撤回から数日も経たないうちに、 私の研究に さらに大きな進展 が生じる。
+この進展は、 「逃避ではなく、正面から学術界に挑むべきだ」 という決意を決定的にした。
+航平はこの状況を Muhiuddin 先生に相談し、 研究の方向性・制度的立場・投稿戦略について議論を重ねた結果、 
+先生は航平を 正式に弟子として受け入れ、指導教官となることを決めた。
+この瞬間、航平は初めて 研究者としての文脈（academic context） を獲得し、 SINT の文明圏としての基盤が形成され始める。
+
+
+Tips:OFUTONINIRUが挑んでる場所
+2025年 AIF(三回),integers(二回),JMSJ(一回),Parabola(一回)
+2025年は私の研究がスタートした年だ。私の成果はまずAIFに送られた。当然デスクリジェクトである。言っておくが、デスクリジェクトとは査読にすら回されない却下であり、トップ雑誌になるほど論文の質関係なく落ちてしまう。integersには二回送った。ここでは「推薦人を呼べ。」と言われた。
+JMSJでは「博士号なしの論文は見ない」と言われた。もう詰みか、後ろ盾もない人間(この時、researchmapという後にカバーレターで凄まじい信頼性を放すものを形式審査を通過して登録出来ていたが、知らなかった)にそんなチャンスはこないか――私はその時Parabola(UNSW)に逃げた。この時、Parabolaの編集長をしていたThomas Britz教授という世界的権威は、私を定型文で落とすことをしなかった。
+```
+Dear Kohei Okawa,
+thank you very much for your article submitted to Parabola!
+At a quick glance, it looks like you have most likely done good mathematical work.
+However, it is hard at this stage to see whether the article would be suitable for publication in Parabola, since the article is not easily accessible to readers.
+To make the article more accessible, please
+* write as if readers know very little about the subject: introduce all concepts and notation, for instance;
+* provide an introduction, in which you state the conjecture and describe its history and context, so that reader might understand why it is interesting;
+* do not include an abstract;
+* introduce all notation before using it;
+* include citations to the references for all stated conjectures, lemmas, theorems, and so on;
+* make sure to use the appropriate LaTeX environments for conjectures, lemmas, theorems, examples and so forth (e.g., \begin{lemma} ...);
+* make it clear what your own contributions are, while also making clear that your discoveries turned out to be known.
+Warm regards, and thank you again!,
+Thomas.
+``` <!-- 青色のテキストで、翻訳文を並記してほしいです -->
+
+普通なら、これがきた時点で教育的配慮が1億倍詰まったデスクリジェクトと考えるべきなのだが、私は違った。そこから論文のTeXバージョンを送り付け、なんとBritz
+先生が直々にTeXを添削してくれたのだ。この指導で、当時52通ものメールを先生としていた。
+ただ先生も内容は理解できないとして踏み込まなかった。とりあえず、自力で指導教官を見つけなさい___私はそう言われて、先程前述した通り経ったそこから3ヶ月の
+2026年1月、ある新興系無料数学雑誌「Annals of Communication in Mathematics」の編集長…しかし、世界トップ2%科学者常連、タブーク大学数学科Lab Headの
+G.Muhiuddinという男を指導教官にすることに成功した。
+
+
+
+2026年 Annals(of Comm. math),Annals (of math),IMRN,AIF,PTRF
+2026年1月、すでに前述したように指導教官の雑誌には挑んで辞めた。ここからは世界最高峰Annals of Mathematicsを一旦狙うとした。少しでもいい反応がもらえるな
+ら、それで良い。そう思っていた。とはいえ、まだそこまでいい新成果も出ておらず、ましてやそんな未解決問題解けたと書くのも終わっている為、まず指導教官の名
+前なしで成果を詰めて送った。6日耐えて落ちた。
+2026年3月、これまでにあるすごい進展があったので、指導教官に相談して謝辞に先生の名前を書く許可を得てAnnalsに挑戦。なんと10日耐えた。
+そしてこれで私は少し言葉に表せない何かを感じて、オックスフォード大学の運営する速報数学雑誌(ただし同じく超難関)「imrn」に送った。ここではなんと4日でステ
+ータスが「in peer review」と代わり、凄まじい嬉しさが込み上げたが、同月末ごろに落ちた。
+そしてその原稿は数論幾何だったので、2025年に落ちた因縁があるが数論幾何を愛してやまないaifに送った。
+それまで20日そこらで落ちていたが、28日耐えた。
+とはいえこれらも全ていつも通りの無機質な不採用理由もないデスクリジェクトだった。いわゆる具体的な指摘付きデスクリジェクトというレアなやつを欲していた。
+そして2026年4月、流石に数論幾何に沼ってるだけ、すなわち一つの研究テーマオンリーにするのはダメだと思った。一旦不等式評価と確率論でガチで攻めやすい「ラ
+マヌジャングラフ」「伊原ζ関数」という分野を発見した。まだいわゆる多重ζ関数より扱いやすい。
+そしてこの時私はおそらく世界初の結果を得た。トンデモを言いたいだけではなく、まじめに確率論数学者誰もが研究していなかった穴場だったのだ。
+この成果は指導教官の指導とは独立してできたので、それをきちんと書いて、いつものresearchmapとacademaiaeduとorcidとMuhiuddin先生の名前(指導教官欄)を署名
+としたカバーレターでPTRFに送った。結果デスクリジェクトだったが、何かがすごく違った。
+メール一部にこう書かれていたのである。
+
+
+```
+Our Editorial Board has examined your paper and reached a general consensus that, while being a serious contribution, there is not a strong enough case on grounds of interest/innovation for the paper to be further considered via a full reviewing process. 
+This paper is concerned with certain spectral problems related to random graphs. It is difficult to evaluate whether the paper contains significant new ideas or interesting results, since the presentation is highly deficient: there is a lack of basic definitions, clear statements of main theorems, and a clear discussion of motivation and of the relation to the prior literature. Thus the paper is not in a form that can reasonably be subjected to review.
+Unfortunately, due to the current very high pressure for space in our journal, the Editorial Board has to be very selective and is forced to reject many high-quality papers, sometimes with little or no report at all. 
+However, we do hope that a quick rejection will help to speed up the publication of your work in an appropriate journal and that you will consider PTRF in a future as a possible venue for your work.
+Sincerely yours,
+Ramon van Handel and Lorenzo Zambotti
+Editors in Chief, PTRF
+```<!-- 青色のテキストで、翻訳文を並記してほしいです -->
+
+編集長の実名での連名、さらに内容に踏み込んだ指摘。普通のデスクリジェクトではあり得ないのである。そもそも普通のデスクリジェクトはどう言うのかと言うと、
+```
+Dear Colleague, 
+We regret to inform you that your article entitled "○○○○" will not be accepted for publication in Annales de l'Institut Fourier.
+Indeed, the Editorial Board has decided that your article does not meet the standards of a highly selective mathematical journal such as Annales de l'Institut Fourier.
+
+
+Yours sincerely,
+Romain Vanel,
+On behalf of the editorial board of the Annales de l'Institut Fourier
+(実際のaifでのデスクリジェクトメール文のタイトルだけ○○○にしたもの)
+```<!-- 青色のテキストで、翻訳文を並記してほしいです -->
+という具合に代理による執筆で、普通は署名がジャーナル名か秘書になるものなのだ。なのに今回ptrfでは
+1.容赦ない指摘
+2.コメントすることもないことが多いと言う提示
+3.編集長らの実名連名
+というコンボであった。これは即座にMuhiuddin先生にも共有し驚愕された。現在、指摘通りに暗黙に使ってた定義を書き加えて、それでも弱い結論にはならなかったから「serious contribution｣がお世辞ではないと確信を得た。なぜなら、トップエディターは、ハリボテの新規性だけ高い(中身ボロボロ)、すなわちトンデモ論文に「serious contribution」と明記しないからだ。
+
+
+設立までその2：2026年3月からの爆発的人気
+Scratchという狭い世界ながら、技術実装力や研究論文サーチ力、定理研究力が高い子が数学・技術界隈にはたく
+さんいた。その中から二十三人を抽出した。
+すると、彼らがかなり有名だったことにより、爆発的に素人すなわちワイワイ層にも広まったのだ。
+現在SINTには泣きついてしまうレベルの志願者もいるほどで、2026年6月8日時点でスタジオフォロワー数36人、
+メンバー24人となった。
+また、阿部和広先生がスタジオの説明で一部指摘をする為ここにきたことがあり、その瞬間のログを記念としてス
+タジオ説明欄にリンクしている。
+また、現在メンバーがR13なら、researchmapやorcidを作る際、Scratchにはれることができるように、Scratch
+チームに申請しており、まだ専門スタッフに2月に回ってから返信がないです。🥺
