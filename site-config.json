@@ -5,17 +5,17 @@
         {
             "title": "ABOUT",
             "links": [
-                { "label": "SINTについて", "href": "index.html#hero" },
-                { "label": "History", "href": "index.html#history" },
-                { "label": "Chronicle (設立の記録)", "href": "chronicle.html" },
-                { "label": "制度圏の創設", "href": "index.html#conception" }
+                { "label": "TOP PAGE", "href": "/index.html" },
+                { "label": "ブログ (掲示板)", "href": "/blog/index.html" },
+                { "label": "クロニクル", "href": "/chronicle.html" },
+                { "label": "FAQ / よくある質問", "href": "/faq.html" }
             ]
         },
         {
             "title": "COMMUNITY",
             "links": [
                 { "label": "Scratchスタジオ", "href": "https://scratch.mit.edu/studios/36783305/", "external": true },
-                { "label": "入会審査 (TESTAMENT)", "href": "apply.html" }
+                { "label": "入会審査 (TESTAMENT)", "href": "/apply.html" }
             ]
         },
         {

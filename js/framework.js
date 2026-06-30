@@ -6,9 +6,7 @@ class SintFramework {
     async init() {
         await this.loadConfig();
         this.injectHeader();
-        this.injectSideNav();
         this.injectFooter();
-        this.setupEventListeners();
     }
     async loadConfig() {
         try {
@@ -49,12 +47,11 @@ class SintFramework {
         const headerHTML = `
             <header class="sint-framework-header">
                 <div class="header-logo">
-                    <a href="index.html">SINT</a>
+                    <a href="${this.resolveBasePath()}index.html">SINT</a>
                 </div>
-                <button class="nav-toggle" aria-label="Toggle Navigation">
-                    <span class="nav-toggle-line"></span>
-                    <span class="nav-toggle-line"></span>
-                </button>
+                <nav class="header-nav" style="margin-left: auto; display: flex; gap: 20px;">
+                    <a href="${this.resolveBasePath()}blog/index.html" style="color: var(--text-color); text-decoration: none; font-weight: bold;">BLOG</a>
+                </nav>
             </header>
         `;
         if (headerTarget.tagName.toLowerCase() === 'sint-header') {
@@ -62,32 +59,6 @@ class SintFramework {
         } else {
             headerTarget.innerHTML = headerHTML;
         }
-    }
-    injectSideNav() {
-        if (document.querySelector('.sint-framework-sidenav'))
-            return;
-        const sideNavHTML = `
-            <nav class="sint-framework-sidenav">
-                <div class="sidenav-overlay"></div>
-                <div class="sidenav-content">
-                    <div class="sidenav-header">
-                        <span class="sidenav-title">NAVIGATION</span>
-                        <button class="nav-close" aria-label="Close Navigation">×</button>
-                    </div>
-                    <ul class="sidenav-links">
-                        <li><a href="index.html" class="nav-link"><span class="nav-num">00</span>HOME</a></li>
-                        <li><a href="index.html#hero" class="nav-link"><span class="nav-num">01</span>ABOUT US</a></li>
-                        <li><a href="index.html#history" class="nav-link"><span class="nav-num">02</span>HISTORY</a></li>
-                        <li><a href="chronicle.html" class="nav-link"><span class="nav-num">03</span>CHRONICLE</a></li>
-                        <li><a href="apply.html" class="nav-link"><span class="nav-num">04</span>TESTAMENT (応募)</a></li>
-                    </ul>
-                    <div class="sidenav-footer">
-                        <span>THE MATHEMATICAL CRUCIBLE</span>
-                    </div>
-                </div>
-            </nav>
-        `;
-        document.body.insertAdjacentHTML('beforeend', sideNavHTML);
     }
     injectFooter() {
         const footerTarget = document.querySelector('sint-footer') || document.querySelector('footer');
@@ -134,26 +105,6 @@ class SintFramework {
         } else {
             footerTarget.outerHTML = footerHTML;
         }
-    }
-    setupEventListeners() {
-        const toggleBtn = document.querySelector('.nav-toggle');
-        const closeBtn = document.querySelector('.nav-close');
-        const sideNav = document.querySelector('.sint-framework-sidenav');
-        const overlay = document.querySelector('.sidenav-overlay');
-        const openNav = () => {
-            sideNav.classList.add('is-open');
-            document.body.style.overflow = 'hidden';
-        };
-        const closeNav = () => {
-            sideNav.classList.remove('is-open');
-            document.body.style.overflow = '';
-        };
-        if (toggleBtn)
-            toggleBtn.addEventListener('click', openNav);
-        if (closeBtn)
-            closeBtn.addEventListener('click', closeNav);
-        if (overlay)
-            overlay.addEventListener('click', closeNav);
     }
 }
 if (document.readyState === 'loading') {
