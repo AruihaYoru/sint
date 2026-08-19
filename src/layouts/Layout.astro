@@ -1,0 +1,75 @@
+---
+import SintHeader from '../components/SintHeader.astro';
+import SintFooter from '../components/SintFooter.astro';
+import '../styles/global.css';
+
+interface Props {
+	title?: string;
+	description?: string;
+	ogImage?: string;
+}
+
+const { 
+	title = "Scratch数論研究会 (SINT)",
+	description = "Scratch数論研究会 (SINT) は、Scratch上で数論や数学に関連するプロジェクトを作成・研究するコミュニティです。",
+	ogImage = "/ogp.webp"
+} = Astro.props;
+
+const siteUrl = "https://sint-org.com";
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString().replace(/\/$/, "");
+const resolvedOgImage = ogImage.startsWith('http') ? ogImage : new URL(ogImage, siteUrl).toString();
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content={description}>
+    <meta name="keywords" content="Scratch, 数論, 数学, プログラミング, Sint, 教育, 研究所">
+    <meta property="og:title" content={title}>
+    <meta property="og:description" content={description}>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content={canonicalUrl}>
+    <meta property="og:image" content={resolvedOgImage}>
+    <meta property="og:site_name" content="Scratch数論研究会 (SINT)">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content={title}>
+    <meta name="twitter:description" content={description}>
+    <link rel="canonical" href={canonicalUrl}>
+    <title>{title}</title>
+    
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- ページ固有の head 要素用スロット -->
+    <slot name="head" />
+</head>
+<body class="light-theme">
+
+    <SintHeader />
+
+    <!-- テーマスイッチ -->
+    <!-- <button class="theme-switch" id="theme-toggle" aria-label="Toggle Theme">
+        <div class="theme-switch-inner"></div>
+    </button> -->
+
+    <slot />
+
+    <SintFooter />
+
+    <script is:inline src="/js/hero-reveal.js"></script>
+    <script is:inline src="/js/text-reveal.js"></script>
+    <script is:inline src="/js/scroll-animation.js"></script>
+    <script is:inline src="/js/apply-button-animator.js"></script>
+
+    <script is:inline>
+        document.getElementById('theme-toggle')?.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+        });
+    </script>
+
+</body>
+</html>

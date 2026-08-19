@@ -1,0 +1,57 @@
+---
+---
+<header class="sint-framework-header">
+    <div class="header-logo">
+        <a href="/">SINT</a>
+    </div>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Open Navigation">
+        <span class="nav-toggle-line"></span>
+        <span class="nav-toggle-line"></span>
+    </button>
+</header>
+
+<div class="sint-framework-sidenav" id="sidenav">
+    <div class="sidenav-overlay" id="sidenav-overlay"></div>
+    <div class="sidenav-content">
+        <div class="sidenav-header">
+            <span class="sidenav-title">MENU</span>
+            <button class="nav-close" id="nav-close" aria-label="Close Navigation">&times;</button>
+        </div>
+        <ul class="sidenav-links">
+            <li><a href="/" class="nav-link"><span class="nav-num">01</span>TOP PAGE</a></li>
+            <li><a href="/chronicle" class="nav-link"><span class="nav-num">02</span>CHRONICLE</a></li>
+            <li><a href="/docs" class="nav-link"><span class="nav-num">03</span>DOCS</a></li>
+            <li><a href="/faq" class="nav-link"><span class="nav-num">04</span>FAQ</a></li>
+            <li><a href="/apply" class="nav-link"><span class="nav-num">05</span>TESTAMENT</a></li>
+        </ul>
+        <div class="sidenav-footer">
+            SINT // THE MATHEMATICAL CRUCIBLE
+        </div>
+    </div>
+</div>
+
+<script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggle = document.getElementById('nav-toggle');
+        const close = document.getElementById('nav-close');
+        const sidenav = document.getElementById('sidenav');
+        const overlay = document.getElementById('sidenav-overlay');
+
+        const openMenu = () => {
+            sidenav?.classList.add('is-open');
+        };
+
+        const closeMenu = () => {
+            sidenav?.classList.remove('is-open');
+        };
+
+        toggle?.addEventListener('click', openMenu);
+        close?.addEventListener('click', closeMenu);
+        overlay?.addEventListener('click', closeMenu);
+
+        // Close menu on link click (especially for page transitions or anchors)
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', closeMenu);
+        });
+    });
+</script>

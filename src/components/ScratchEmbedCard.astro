@@ -1,0 +1,142 @@
+---
+interface Props {
+	projectId: string;
+	title: string;
+	brandText?: string;
+}
+
+const { 
+	projectId, 
+	title, 
+	brandText = "Scratch数論研究会 (SINT) 公式開発モジュール" 
+} = Astro.props;
+---
+
+<div class="scratch-embed-card reveal-up">
+    <div class="scratch-card-header">
+        <div class="dot-group">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+        <span class="card-title">{title}</span>
+    </div>
+    <div class="scratch-card-body">
+        <div class="iframe-wrapper">
+            <iframe 
+                src={`https://scratch.mit.edu/projects/${projectId}/embed`}
+                allowtransparency="true" 
+                width="485" 
+                height="402" 
+                frameborder="0" 
+                scrolling="no" 
+                allowfullscreen
+            ></iframe>
+        </div>
+        <div class="scratch-card-meta">
+            <span class="brand-text">{brandText}</span>
+            <a href={`https://scratch.mit.edu/projects/${projectId}/editor/`} target="_blank" rel="noopener noreferrer" class="scratch-link">Open in Scratch ↗</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.scratch-embed-card {
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    width: 100%;
+    margin-top: 2rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+body.light-theme .scratch-embed-card {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+}
+
+.scratch-card-header {
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--grid-color);
+}
+
+.scratch-card-header .dot-group {
+    display: flex;
+    gap: 6px;
+}
+
+.scratch-card-header .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--text-color);
+    opacity: 0.3;
+}
+
+.scratch-card-header .card-title {
+    font-family: var(--font-en);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+}
+
+.scratch-card-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.iframe-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 485px;
+    aspect-ratio: 485 / 402;
+    border: 1px solid var(--grid-color);
+}
+
+.iframe-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.scratch-card-meta {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--grid-color);
+}
+
+.scratch-link {
+    font-family: var(--font-en);
+    font-weight: 700;
+    color: var(--text-color);
+    text-decoration: none;
+    border-bottom: 1px solid var(--text-color);
+    padding-bottom: 1px;
+}
+
+.scratch-link:hover {
+    opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+    .scratch-card-body {
+        padding: 16px;
+    }
+}
+</style>

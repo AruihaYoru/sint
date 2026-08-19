@@ -1,0 +1,710 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import ScratchEmbedCard from '../../components/ScratchEmbedCard.astro';
+
+export const title = "では、実務上のRSA暗号について。— OAEPパディングからTLS 1.3まで";
+export const description = "教科書的RSAの数学的証明、OAEPによるCCA2耐性の獲得、およびTLS 1.3アーキテクチャにおけるRSAの挙動と仕様。";
+export const specId = "SPEC-01";
+export const tag = "CRYPTOGRAPHY";
+export const publishedDate = "2026.08.19";
+export const author = "AruihaYoru";
+
+const faqs = [
+    {
+        q: "暗号学における『鍵配送問題』とはどのような課題ですか？",
+        a: "暗号通信を行う際に『鍵を安全に相手に届けるために通信を暗号化したいのに、その暗号を解くための鍵を安全に送る手段がない』という矛盾の課題です。これを解決するため、世界に公開して誰でも閉められる（暗号化できる）が所持者しか開けられない（復号できない）『南京錠』のメタファーを持つ非対称の『公開鍵』と『秘密鍵』の概念が導入されました。"
+    },
+    {
+        q: "公開指数として e=65537 が使われるのはなぜですか？",
+        a: "65537 はフェルマー素数 F4 = 2^16 + 1 であり、2進数表記（10000000000000001）で1が2個しか含まれないため、バイナリ乗算アルゴリズムにおいて16回の自乗と1回の乗算のみで高速に暗号化・署名検証ができるからです。また、e=3 のように小さすぎないため Coppersmith攻撃などの標的にもなりにくく、安全性と計算効率を高いレベルで両立する標準仕様となっています。"
+    },
+    {
+        q: "決定性暗号はなぜ選択平文攻撃（CPA）に対して脆弱なのですか？",
+        a: "同一の平文に対する暗号文が常に一定（決定性）であるため、攻撃者が『Yes』や『No』などの平文候補をあらかじめ公開鍵を用いて暗号化しておき、実際に盗聴・傍受した暗号文と照合するだけで、秘密鍵を使うことなく平文を確定的に特定できてしまうからです。"
+    },
+    {
+        q: "RSAの数学的性質である『乗法準同型性』に起因する展延性攻撃とは何ですか？",
+        a: "2つの暗号文を乗算した結果が、それぞれの平文を乗算して暗号化した結果と一致する性質（乗法準同型性）を悪用した攻撃です。攻撃者は暗号文の元である平文の値を知らなくても、暗号文に特定の数を掛け合わせることで、復号後の平文を任意の倍数（m * r）に意図的に変造できてしまうリスクがあります。"
+    },
+    {
+        q: "RSA-OAEP はどのようにして決定性暗号や展延性攻撃の脆弱性を解決しますか？",
+        a: "平文を直接暗号化するのではなく、ハッシュ関数に基づく2ラウンドのFeistel類似構造を用いてランダムシードによる乱数化と拡散を行います。これにより同一平文でも毎回異なる暗号文になる確率的暗号化を達成し、さらに暗号文が1ビットでも改ざんされた場合は復号時のパディング・ゼロ値検証フェーズで高確率で検出され、処理を棄却（CCA2耐性）します。"
+    },
+    {
+        q: "TLS 1.2 で使用されていた『RSA鍵共有』が廃止されたのはなぜですか？",
+        a: "クライアント側が生成した共通鍵の元（PMS）をサーバーの公開鍵で直接暗号化して送る方式のため、将来的にサーバーの長期RSA秘密鍵が漏洩（ハードディスクの回収や脆弱性による盗み出しなど）した時点で、過去に傍受・記録されていたすべての通信データが一括で復号・解読されてしまう（前方秘匿性 / PFSの欠源）脆弱性があったためです。"
+    },
+    {
+        q: "TLS 1.3 において RSA 暗号はどのような役割を果たしていますか？",
+        a: "TLS 1.3では前方秘匿性を確保するため、暗号化のための鍵共有機能を ECDHE（一時楕円曲線ディフィー・ヘルマン）へ完全に一本化し、鍵配送目的のRSAは完全に廃止されました。RSAは、通信相手のアイデンティティを保証して中間者攻撃を防ぐための『デジタル署名（RSA-PSSによる署名検証）』としてのみ利用されます。"
+    },
+    {
+        q: "ミラー-ラビン素数判定法の仕組みと誤判定の確率について教えてください。",
+        a: "奇数 n > 3 に対し n-1 = 2^s * d （dは奇数）と分解し、ランダムに選んだ底 a に対し a^d ≡ 1 または a^(2^r * d) ≡ n-1 (mod n) をテストします。合成数が判定を誤パスする確率は最大でも 1/4 であり、底 a を変えてテストを k 回繰り返すと誤判定確率は (1/4)^k と極小化します。k=40 または k=64 でテストを繰り返すことで、実用上確実に素数（100%安全な素数）を選定できます。"
+    }
+];
+
+const toc = [
+    { id: "key-distribution", label: "鍵配送問題" },
+    { id: "scratch-demo", label: "Scratch デモ" },
+    { id: "rsa-definition", label: "RSA暗号の数学的定義および仮定" },
+    { id: "key-generation", label: "鍵生成アルゴリズム" },
+    { id: "encryption-decryption", label: "暗号化と復号" },
+    { id: "proof", label: "復号の正当性と数学的証明" },
+    { id: "vulnerabilities", label: "教科書的RSA暗号の脆弱性と安全性" },
+    { id: "rsa-oaep", label: "RSA-OAEP" },
+    { id: "tls", label: "ハイブリッド暗号と TLS 1.3" },
+    { id: "glossary", label: "用語集" },
+    { id: "appendix", label: "補足" }
+];
+---
+
+<DocsLayout
+    title={title}
+    description={description}
+    specId={specId}
+    tag={tag}
+    publishedDate={publishedDate}
+    faqs={faqs}
+    toc={toc}
+>
+
+        <!-- ==================== 鍵配送問題 ==================== -->
+        <section class="docs-section" id="key-distribution">
+            <span class="docs-section-label reveal-up">01 / INTRODUCTION</span>
+            <h2 class="docs-section-heading reveal-up">鍵配送問題</h2>
+            <div class="docs-prose reveal-up">
+                <p>何故暗号化しなければならないのか、という話を先にしておきましょう。<br>
+                BelleがAliceに手紙を送るとして、その配達員Clemくんが「善良」である確証は一切ありません。<br>
+                ＝送信元Belleから受信先Aliceにメッセージを送るとして、それに使用する通信経路や中継サーバーに潜む「Clem」は信用できるのか（このClemくんは Man In The Middle = MITM とか言ったりします）。</p>
+
+                <p>Belleが「これは文字数を数値にしたあと、ある特定の数値を加算してそのまま文字列に変換する暗号で、+3するよ」と解読法を添付した場合、Aliceは解読できます。ですが、Clemくんも解読できてしまいます。当然、添付されたメッセージは本メッセージごとClemが輸送するのですから。<br>
+                ＝ですから、Clemが分からない方法で、BelleとAliceだけが解読できる暗号が必要なのです。</p>
+
+                <p>「鍵を安全に届けるために暗号化したいのに、その暗号を解くための鍵を送る手段がない」という矛盾、これを<strong>鍵配送問題</strong>と言います。</p>
+
+                <p>Aliceだけが保持する「秘密鍵」と、BelleとClem（それに世界中の人々！）が見ることのできる「公開鍵」の話をしましょう。<br>
+                この場合、公開鍵とは<strong>「南京錠」</strong>のイメージをした方が直感的かもしれません。</p>
+
+                <p>Aliceは、この公開鍵（「誰でも自由にロックしていい、まだ開いている錠」）を世界中にばらまきます。Clem、そしてもちろんBelleはこの公開鍵を手に入れることができますし、自由に閉めることができます。<br>
+                BelleはAliceに秘密の手紙を送りたいとき、手紙を箱に入れ、Aliceの南京錠を「パチン」とロックして発送します。この瞬間、手紙はBelle本人にすら開けられなくなります。</p>
+
+                <p>途中で配達員のClemくんが箱を盗み見ようとしても、かかっているのは南京錠です。Clemくんも公開鍵（開いた南京錠）は持っていますが、鍵を開けるための「鍵」を持っていないため、箱を壊さない限り中身を読むことはできません。<br>
+                無事に箱を受け取ったAliceは、自分のポケットから秘密鍵を取り出して南京錠を開け、中の手紙を読むことができます。公開鍵は、秘密鍵でのみ開けることが可能です。</p>
+            </div>
+        </section>
+
+        <hr class="docs-divider">
+
+        <!-- ==================== Scratch デモ ==================== -->
+        <section class="docs-section" id="scratch-demo">
+            <span class="docs-section-label reveal-up">INTERACTIVE DEMO</span>
+            <h2 class="docs-section-heading reveal-up">さて、こういうものを用意しました。</h2>
+
+            <ScratchEmbedCard
+                projectId="1365985828"
+                title="Scratch / RSA暗号デモ.sb3"
+                brandText="RSA暗号"
+            />
+        </section>
+
+        <hr class="docs-divider">
+
+        <!-- ==================== 本題 ==================== -->
+        <section class="docs-section" id="rsa-definition">
+            <span class="docs-section-label reveal-up">02 / MATHEMATICAL FOUNDATION</span>
+            <h2 class="docs-section-heading reveal-up">本題</h2>
+            <div class="docs-prose reveal-up">
+                <p>先ほどまでの文章はあまりに簡略で、これだけで満足する人はおおよそいないと思いますし、巨大な素数同士の積の素因数分解が極端なまでに難しいことは基本的に知っていると思います。そういった初歩的な話は全て飛ばしましょう。</p>
+            </div>
+
+            <h3 class="docs-subsection-heading reveal-up" id="rsa-assumptions">RSA暗号の数学的定義および仮定</h3>
+            <div class="docs-prose reveal-up">
+                <p>RSA暗号の安全性は、以下の2つの数学的基礎に基づいて保障されています。</p>
+                <ol>
+                    <li><strong>素因数分解問題の困難性</strong><br>
+                    2つの巨大な素数 $p, q$ （ただし $p \neq q$）の積 $n = pq$ を計算することは容易（人力であっても！）ですが、$n$ から素因数 $p, q$ を復元することは困難です。現代の計算機スペックであっても、$p, q$ 単体のビット長が512bit（$n$ が1024bit）を超えてくると、現実的な時間内での素因数分解は実質的に不可能です（もし何らかの要因でどっかの国がアメリカ国防総省をブチギレさせてその国が1024bitのnしか使ってない国だったらそのうち突破されるかもしれませんが！）。<br>
+                    </li>
+                    <li><strong>オイラーの $\varphi$ 関数</strong><br>
+                    正の整数 $n$ に対して、$n$ 以下で $n$ と互いに素な正の整数の個数を表す関数を $\varphi(n)$ と定義します。$n = pq$ （$p, q$ は相異なる素数）であるとき、オイラー関数の乗法性より以下が成立します。
+                    $$\varphi(n) = (p-1)(q-1)$$</li>
+                </ol>
+            </div>
+        </section>
+
+        <hr class="docs-divider">
+
+        <!-- ==================== 鍵生成 ==================== -->
+        <section class="docs-section" id="key-generation">
+            <span class="docs-section-label reveal-up">03 / KEY GENERATION</span>
+            <h2 class="docs-section-heading reveal-up">鍵生成アルゴリズム</h2>
+            <div class="docs-prose reveal-up">
+                <p>巨大素数 $p, q$ が実際に用意できたと仮定し、鍵生成アルゴリズムをなぞってみましょう。</p>
+                <ol>
+                    <li>$1 &lt; e &lt; \varphi(n)$ かつ $\gcd(e, \varphi(n)) = 1$ の条件を満たす整数 $e$ を選定します。一般的には、計算効率化のために $e = 65537 = 2^&#123;16&#125; + 1$ （フェルマー素数 $F_4$）が使用されます。</li>
+                    <li><strong>秘密鍵 $d$ の算出</strong><br>
+                    $e \cdot d \equiv 1 \pmod&#123;&#123;\varphi(n)&#125;&#125;$、即ちある整数 $k \in \mathbb&#123;&#123;Z&#125;&#125;$ が存在して、以下の線形ディオファントス方程式を満たす $d$ を求めます。
+                    $$e \cdot d = k \cdot \varphi(n) + 1$$</li>
+                </ol>
+                <p>今この場には、2つの鍵、 <strong>公開鍵 $(e, n)$</strong> と <strong>秘密鍵 $(d, n)$</strong> 存在しています。<br>
+               公開鍵はインターネット上で誰でも受け取れる形で配信されています。一方、秘密鍵はクライアントのみが保持し、絶対に誰も知ることができません。</p>
+            </div>
+        </section>
+
+        <hr class="docs-divider">
+
+        <!-- ==================== 暗号化と復号 ==================== -->
+        <section class="docs-section" id="encryption-decryption">
+            <span class="docs-section-label reveal-up">04 / ENCRYPTION & DECRYPTION</span>
+            <h2 class="docs-section-heading reveal-up">暗号化と復号</h2>
+            <div class="docs-prose reveal-up">
+                <p>メッセージ空間を有限環 $\mathbb&#123;&#123;Z&#125;&#125;_n = \&#123; 0, 1, 2, \dots, n-1 \&#125;$ 内の要素（数）として表現します。</p>
+                <ul>
+                    <li><strong>暗号化写像 $E$</strong><br>
+                    平文 $m \in \mathbb&#123;&#123;Z&#125;&#125;_n$ に対し、公開鍵 $(e, n)$ を用いた暗号化関数 $E: \mathbb&#123;&#123;Z&#125;&#125;_n \to \mathbb&#123;&#123;Z&#125;&#125;_n$ は以下の冪乗剰余演算として定義されます。
+                    $$c = E(m) \equiv m^e \pmod n$$</li>
+                    <li><strong>復号写像 $D$</strong><br>
+                    暗号文 $c \in \mathbb&#123;&#123;Z&#125;&#125;_n$ に対し、秘密鍵 $(d, n)$ を用いた復号関数 $D: \mathbb&#123;&#123;Z&#125;&#125;_n \to \mathbb&#123;&#123;Z&#125;&#125;_n$ は以下の通りです。
+                    $$m' = D(c) \equiv c^d \pmod n$$</li>
+                </ul>
+            </div>
+        </section>
+
+        <hr class="docs-divider">
+
+        <!-- ==================== 復号の正当性 ==================== -->
+        <section class="docs-section" id="proof">
+            <span class="docs-section-label reveal-up">05 / PROOF OF CORRECTNESS</span>
+            <h2 class="docs-section-heading reveal-up">復号の正当性と数学的証明</h2>
+            <div class="docs-prose reveal-up">
+                <p>何故、公開鍵による暗号化は秘密鍵を用いた復号でのみ解除できるのでしょうか？<br>
+                復号処理によって元の平文が厳密に復元されること、すなわち $D(E(m)) \equiv m \pmod n$ となることを証明します。</p>
+            </div>
+
+            <div class="docs-theorem reveal-up">
+                <span class="docs-theorem-tag">THEOREM</span>
+                <div class="docs-prose">
+                    <p>任意の $m \in \mathbb&#123;&#123;Z&#125;&#125;_n$ に対し、以下が成り立つ。</p>
+                    $$(m^e)^d \equiv m^&#123;ed&#125; \equiv m \pmod n$$
+                </div>
+            </div>
+
+            <div class="docs-theorem reveal-up">
+                <span class="docs-theorem-tag">PROOF</span>
+                <div class="docs-prose">
+                    <p>鍵生成手順より $ed \equiv 1 \pmod&#123;&#123;\varphi(n)&#125;&#125;$ であるため、ある非負整数 $k$ を用いて以下のように表せます。</p>
+                    $$ed = k \cdot \varphi(n) + 1 = k(p-1)(q-1) + 1$$
+                    <p>したがって、示すべき式は以下と同値です。</p>
+                    $$m^&#123;k(p-1)(q-1) + 1&#125; \equiv m \pmod n$$
+                    <p>中国剰余定理より $n = pq$ （$p, q$ は互いに素）であるため、上式が $\pmod p$ と $\pmod q$ の両方で成立することを示せば、$\pmod n$ での成立が証明されます。</p>
+
+                    <h4 class="docs-subsubsection-heading" id="proof-mod-p">1) $\pmod p$ における成立の検証</h4>
+
+                    <div class="docs-case">
+                        <p class="docs-case-label">Case 1: $\gcd(m, p) = 1$（$m$ が $p$ の倍数でない）場合</p>
+                        <p>フェルマーの小定理（Fermat's Little Theorem）より、$m^&#123;p-1&#125; \equiv 1 \pmod p$ が成り立つ。両辺を $k(q-1)$ 累乗すると：</p>
+                        $$(m^&#123;p-1&#125;)^&#123;k(q-1)&#125; \equiv 1^&#123;k(q-1)&#125; \equiv 1 \pmod p$$
+                        <p>両辺に $m$ を乗算すると：</p>
+                        $$m^&#123;k(p-1)(q-1) + 1&#125; \equiv m \pmod p$$
+                    </div>
+
+                    <div class="docs-case">
+                        <p class="docs-case-label">Case 2: $\gcd(m, p) = p$（$m \equiv 0 \pmod p$）の場合</p>
+                        <p>$m$ は $p$ の倍数であるため、明らかに以下が成り立つ。</p>
+                        $$0^&#123;k(p-1)(q-1) + 1&#125; \equiv 0 \equiv m \pmod p$$
+                    </div>
+
+                    <p>よって、任意の $m$ において以下が成立する。</p>
+                    $$m^&#123;ed&#125; \equiv m \pmod p \quad \cdots \text&#123;(式 A)&#125;$$
+
+                    <h4 class="docs-subsubsection-heading" id="proof-mod-q">2) $\pmod q$ における成立の検証</h4>
+                    <p>同等に、フェルマーの小定理を $q$ に対して適用する。</p>
+
+                    <div class="docs-case">
+                        <p class="docs-case-label">Case 1: $\gcd(m, q) = 1$ の場合</p>
+                        $$m^&#123;q-1&#125; \equiv 1 \pmod q \implies (m^&#123;q-1&#125;)^&#123;k(p-1)&#125; \cdot m \equiv m \pmod q$$
+                    </div>
+
+                    <div class="docs-case">
+                        <p class="docs-case-label">Case 2: $\gcd(m, q) = q$ の場合</p>
+                        $$0^&#123;ed&#125; \equiv 0 \equiv m \pmod q$$
+                    </div>
+
+                    <p>よって、任意の $m$ において以下が成立する。</p>
+                    $$m^&#123;ed&#125; \equiv m \pmod q \quad \cdots \text&#123;(式 B)&#125;$$
+
+                    <h4 class="docs-subsubsection-heading" id="proof-conclusion">3) 結論</h4>
+                    <p>$p$ と $q$ は相異なる素数（$\gcd(p, q) = 1$）であるので、(式 A) と (式 B) より：</p>
+                    $$m^&#123;ed&#125; \equiv m \pmod&#123;pq&#125;$$
+                    <p>すなわち、</p>
+                    $$m^&#123;ed&#125; \equiv m \pmod n$$
+                    <p>以上により、暗号文 $c$ を秘密指数 $d$ で累乗し $\bmod n$ をとることで、例外なく元の平文 $m$ が復元されることが証明されました。</p>
+                    <div class="docs-qed">$\blacksquare$</div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="docs-divider">
+
+        <!-- ==================== 教科書的RSAの脆弱性 ==================== -->
+        <section class="docs-section" id="vulnerabilities">
+            <span class="docs-section-label reveal-up">06 / VULNERABILITIES</span>
+            <h2 class="docs-section-heading reveal-up">教科書的RSA暗号の脆弱性と安全性</h2>
+            
+            <div class="docs-statement-container reveal-up">
+                <p class="docs-giant-statement">さて、本章です。</p>
+            </div>
+
+            <div class="docs-prose reveal-up">
+                <p>基本的に、ネットで見かけるRSA暗号の解説はここまで（ええと、本当にこれ以降について書いてある記事ってあるのでしょうか...?）です。ですが、ここはあくまでも「記事」ではなく「Docs」。今まで話した内容をそのまま実装するのは暗号システムとしては完全な落第点です。決定性暗号である教科書的RSAには、数多くの攻撃手段が存在する為です。</p>
+            </div>
+
+            <h3 class="docs-subsection-heading reveal-up" id="cpa-attack">1. 決定性暗号に起因する選択平文攻撃（CPA）</h3>
+            <div class="docs-prose reveal-up">
+                <p>同一の平文$m$に対する暗号文$c$は常に一定です。攻撃者が平文の候補（たとえば、Yes/Noの二パターン）を予め知っている場合、公開鍵(e,n)を用いてE("Yes")とE("No")を事前に計算し、傍受した暗号文$c$と照合するだけで、平文を完全に特定できます。</p>
+            </div>
+
+            <h3 class="docs-subsection-heading reveal-up" id="malleability-attack">2. 乗法性を利用した展延性攻撃</h3>
+            <div class="docs-prose reveal-up">
+                <p>RSAの冪乗剰余演算は乗法準同型性を持ちます。2つの暗号文 $c_1 \equiv m_1^e \pmod n$ と $c_2 \equiv m_2^e \pmod n$ に対し、以下が成立します。</p>
+                $$c_1 \cdot c_2 \equiv (m_1^e)(m_2^e) \equiv (m_1 m_2)^e \pmod n$$
+                <p>攻撃者は平文を知らなくても、暗号文 $c$ に任意の数 $r^e \bmod n$ を掛け合わせることで、復号後の平文を $m \cdot r \bmod n$ に変造できてしまいます。</p>
+            </div>
+
+            <h3 class="docs-subsection-heading reveal-up" id="coppersmith-bleichenbacher">3. Coppersmithの攻撃とBleichenbacherのオラクル攻撃</h3>
+            <div class="docs-prose reveal-up">
+                <p><strong>Coppersmithの攻撃:</strong> 公開指数 $e$ が小さい値（例えば3）であり、かつ平文 $m$ の一部が判明している場合、格子基底縮小アルゴリズム（LLL）を用いて多項式の小根を計算し、平文の未知部分を多項式時間で特定できます。</p>
+                <p><strong>Bleichenbacher攻撃（Million Message Attack）:</strong> PKCS #1 v1.5 パディングを適用したRSAにおいて、サーバーが復号時のパディングエラーの有無を応答（オラクル）として返す場合、攻撃者は適応的選択暗号文攻撃（CCA）を行うことで、数百万回の試行で秘密鍵を使わずに暗号文を解読できます。</p>
+            </div>
+        </section>
+
+        <hr class="docs-divider">
+
+        <!-- ==================== RSA-OAEP ==================== -->
+        <section class="docs-section" id="rsa-oaep">
+            <span class="docs-section-label reveal-up">07 / RSA-OAEP</span>
+            <h2 class="docs-section-heading reveal-up">実装における基本：RSA-OAEP</h2>
+            <div class="docs-prose reveal-up">
+                <p>教科書的RSAの構造的欠陥を根本から解決するために考案されたのが、RSA-OAEPです。<br>
+                平文を直接累乗するのではなく、ハッシュ関数に基づく 2ラウンドの Feistel 類似構造 を用いて乱数化および拡散を行います。<br>
+                これにより、以下の3つの重要な性質が同時に達成されます。</p>
+                <ul>
+                    <li><strong>確率的暗号化（Probabilistic Encryption）:</strong> 暗号化ごとにランダムなシードを組み込むため、同一の平文から常に異なる暗号文が生成される（CPA耐性の獲得）。</li>
+                    <li><strong>全位相同値性・ plaintext-awareness:</strong> 暗号文を任意に改変（乗法性の利用など）した場合、復号処理のパディング検証フェーズで高確率（ほぼ $1 - 2^&#123;'&#123;-|k_1|&#125;&#125;$）で検出・棄却される（CCA2耐性 / 非展延性の獲得）。</li>
+                    <li><strong>部分平文の漏洩防止:</strong> 平文の一部分だけが判明している場合でも、格子攻撃（Coppersmith等）による全解読を防止する。</li>
+                </ul>
+                <p>実際の中身は以下の通りなのですが、極端なまでに専門性が高く、実質的な読める睡眠薬です。未説明用語は基本的に全て後で解説しているので、Ctrl+Fを駆使しながら是非..</p>
+            </div>
+
+            <h3 class="docs-subsection-heading reveal-up" id="oaep-params">1. OAEP のエンコードパラメータと構造</h3>
+            <div class="docs-prose reveal-up">
+                <p>RSAのモジュラス $n$ のビット長を $k$ バイトとします。</p>
+                <ul>
+                    <li><strong>パラメータ設定:</strong>
+                        <ul>
+                            <li>$k\_0$: セキュリティパラメータ（シード $r$ のバイト長。例: 32バイト / 256bit）</li>
+                            <li>$k\_1$: パディング検証用ゼロパラメータ（バイト長。例: 32バイト）</li>
+                            <li>$M$: 暗号化対象のメッセージ（バイト長 $mLen \le k - k\_0 - k\_1 - 2$）</li>
+                            <li>$G, H$: 暗号学的ハッシュ関数に基づくマスク生成関数（MGF: Mask Generation Function）
+                                <ul>
+                                    <li>$G: \&#123;0,1\&#125;^&#123;k\_0&#125; \to \&#123;0,1\&#125;^&#123;k - k\_0&#125;$</li>
+                                    <li>$H: \&#123;0,1\&#125;^&#123;k - k\_0&#125; \to \&#123;0,1\&#125;^&#123;k\_0&#125;$</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <h3 class="docs-subsection-heading reveal-up" id="oaep-encoding">2. エンコーディング処理</h3>
+            <div class="docs-prose reveal-up">
+                <p>平文 $M$ からフォーマット済みデータ $EM$（Encoded Message）を生成するアルゴリズムは以下の通りです。</p>
+                <ol>
+                    <li><strong>パディング列の構築:</strong><br>
+                    メッセージ $M$ の直後に <code>0x01</code> バイトを連結し、全体構造長が $k - k\_0$ バイトになるよう <code>0x00</code> を付与します。
+                    $$DB = \text&#123;Hash&#125;(L) \parallel \text&#123;PS&#125; \parallel \text&#123;0x01&#125; \parallel M$$
+                    <em>※ここで $\text&#123;Hash&#125;(L)$ はオプションのラベルハッシュ、$\text&#123;PS&#125;$ は <code>0x00</code> のパディング列。</em></li>
+                    <li><strong>シードの生成:</strong><br>
+                    $k\_0$ バイトの真性乱数（または暗号論的擬似乱数） $r \leftarrow \&#123;0,1\&#125;^&#123;k\_0&#125;$ を生成。</li>
+                    <li><strong>第1ラウンド（データブロックのマスク）:</strong><br>
+                    乱数 $r$ から MGF を用いてマスクキー $maskedDB$ を算出します。
+                    $$dbMask = G(r)$$
+                    $$maskedDB = DB \oplus dbMask$$</li>
+                    <li><strong>第2ラウンド（シードのマスク）:</strong><br>
+                    $maskedDB$ から MGF を用いてシード $r$ 自体をマスクします。
+                    $$seedMask = H(maskedDB)$$
+                    $$maskedSeed = r \oplus seedMask$$</li>
+                    <li><strong>エンコードメッセージの完成:</strong>
+                    $$EM = \text&#123;0x00&#125; \parallel maskedSeed \parallel maskedDB$$
+                    この $EM$（長さ $k$ バイト）を整数表現に変換したものを $\hat&#123;m&#125;$ とします。</li>
+                </ol>
+            </div>
+
+            <h3 class="docs-subsection-heading reveal-up" id="oaep-encrypt-decrypt">3. 暗号化と復号演算</h3>
+            <div class="docs-prose reveal-up">
+                <ul>
+                    <li><strong>暗号化:</strong>
+                    $$c \equiv (\hat&#123;m&#125;)^e \pmod n$$</li>
+                    <li><strong>復号と OAEP デコード:</strong>
+                        <ol>
+                            <li>秘密鍵 $d$ を用いて $\hat&#123;m&#125;' \equiv c^d \pmod n$ を計算。</li>
+                            <li>$\hat&#123;m&#125;' $ を $k$ バイトのバイト列 $EM'$ に変換。先頭バイトが <code>0x00</code> でない場合は<strong>即座に復号エラー（棄却）</strong>。</li>
+                            <li>$EM'$ を分割: $\text&#123;0x00&#125; \parallel maskedSeed \parallel maskedDB$</li>
+                            <li>逆Feistel構造により復元:
+                            $$r = maskedSeed \oplus H(maskedDB)$$
+                            $$DB = maskedDB \oplus G(r)$$</li>
+                            <li>$DB$ 内の構造検証:<br>
+                            先頭の $\text&#123;Hash&#125;(L)$ が一致し、パディング内の <code>0x01</code> の位置が正しいかを検証。不整合がある場合は<strong>棄却</strong>。</li>
+                            <li><code>0x01</code> 以降のバイト列を真のメッセージ $M$ として抽出。</li>
+                        </ol>
+                    </li>
+                </ul>
+            </div>
+
+            <h3 class="docs-subsection-heading reveal-up" id="oaep-bleichenbacher">4. なぜこれが Bleichenbacher 攻撃を防ぐのか（サイドチャネル攻撃対策）</h3>
+            <div class="docs-prose reveal-up">
+                <p>Bleichenbacher 攻撃（PKCS #1 v1.5 に対する攻撃）は、サーバーが「パディングフォーマットエラー」と「その他のエラー」で異なる応答時間やエラーコードを返す（エラーオラクル）ことを利用し、数百万回の選択暗号文を送信して秘密鍵を使わずに $m$ を段階的に絞り込む攻撃でした。</p>
+                <p>OAEP では以下の2重の対策によりこれを遮断します。</p>
+                <ol>
+                    <li><strong>定数時間処理:</strong><br>
+                    復号アルゴリズムにおいて、$EM'$ のフォーマットエラー、$\text&#123;Hash&#125;(L)$ の不一致、<code>0x01</code> の欠損など、どの段階でエラーが発生した場合でも、処理時間や返却するエラーレスポンスを厳密に同一に保ちます。</li>
+                    <li><strong>証明可能安全:</strong><br>
+                    ランダムオラクルモデルにおいて、有効な $c$ を生成するためには、攻撃者はハッシュ関数 $G$ と $H$ への問い合わせを通じて正しい $r$ と $M$ の関係を知っていなければなりません。ランダムに改変された $c'$ を復号しても、確率 $1 - 2^&#123;'&#123;-k\_1&#125;&#125;$ で $DB$ 内の検証条件（<code>0x01</code> や固定ゼロの存在）を確定的に外すため、オラクルとして有益な情報を漏洩させません。</li>
+                </ol>
+            </div>
+        </section>
+
+        <hr class="docs-divider">
+
+        <!-- ==================== TLS 1.3 ==================== -->
+        <section class="docs-section" id="tls">
+            <span class="docs-section-label reveal-up">08 / TLS 1.3 ARCHITECTURE</span>
+            <h2 class="docs-section-heading reveal-up">ハイブリッド暗号と TLS 1.3 鍵交換アーキテクチャの厳密比較</h2>
+            <div class="docs-prose reveal-up">
+                <p>実運用環境における RSA の計算コスト $O((\log n)^3)$ を回避し、データ通信を $O(N)$ の共通鍵暗号へ委任する<strong>ハイブリッド暗号</strong>において、旧来の RSA 鍵配送（TLS 1.2 RSA Key Exchange）と現代の Diffie-Hellman 鍵共有（TLS 1.3 ECDHE）には、数学的・安全性において根本的な構造差異が存在します。</p>
+            </div>
+
+            <h3 class="docs-subsection-heading reveal-up" id="tls12">1. TLS 1.2 RSA 鍵共有（廃止）のメカニズムと破綻</h3>
+            <div class="docs-prose reveal-up">
+                <p>TLS 1.2 までの RSA 鍵共有方式では、クライアントが生成した 48バイトの Premaster Secret ($PMS$) を RSA-PKCS#1 v1.5（または RSA-OAEP）で暗号化し、サーバーへ送信していました。</p>
+                $$\text&#123;Client&#125; \xrightarrow&#123;&#123;\quad c = E_&#123;\text&#123;RSA-Pub&#125;&#125; (PMS) \quad&#125;&#125; \text&#123;Server&#125;$$
+                <ul>
+                    <li><strong>鍵導出:</strong><br>
+                    両者は $PMS$ と双方の Client/Server Random から擬似乱数関数（PRF）を用いてマスターシード $MS$ を導出し、対称鍵（AES-GCM 鍵および IV）を生成します。
+                    $$MS = \text&#123;PRF&#125;(PMS, \text&#123;"master secret"&#125;, R_&#123;\text&#123;client&#125;&#125; \parallel R_&#123;\text&#123;server&#125;&#125;  )$$</li>
+                    <li><strong>破綻理由（PFSの欠如と受動的盗聴）:</strong><br>
+                    攻撃者 Clem が通話データをすべて記録していた場合、将来的にサーバーの長期秘密鍵 $d$ が漏洩（破棄ハードディスクの回収、裁判所の差押、ハートブリード等の脆弱性）した時点で、記録された暗号文 $c$ から一括して $PMS$ が復号可能となります。
+                    $$PMS = D_&#123;\text&#123;RSA-Priv&#125;&#125; (c)$$
+                    これにより、<strong>過去数年分の全通信トラフィックの対称鍵 $MS$ が即座に計算され、すべて解読されます。</strong></li>
+                </ul>
+            </div>
+
+            <h3 class="docs-subsection-heading reveal-up" id="tls13">2. TLS 1.3 ECDHE（楕円曲線ディフィー・ヘルマン）による鍵交換と RSA 署名</h3>
+            <div class="docs-prose reveal-up">
+                <p>TLS 1.3 では、<strong>鍵暗号化機能としての RSA を完全に削除</strong>し、一時鍵対（Ephemeral Keypair）による ECDHE 鍵共有へ一本化されました。ここでの RSA は、<strong>認証（Authentication）のためのデジタル署名生成アルゴリズム</strong>としてのみ利用されます。</p>
+            </div>
+
+            <h4 class="docs-subsubsection-heading reveal-up" id="ecdhe">鍵共有フェーズ（ECDHE: 前方秘匿性の確保）</h4>
+            <div class="docs-prose reveal-up">
+                <ol>
+                    <li>クライアントとサーバーは、通信ごとに使い捨ての楕円曲線秘密鍵 $x, y \in \mathbb&#123;&#123;Z&#125;&#125;_q$ と公開鍵 $X = x \cdot G, Y = y \cdot G$ を生成（$G$ は基点）。</li>
+                    <li>平文で公開鍵 $X, Y$ を交換し、双方で共有パラメータ $S$ を計算。
+                    $$S = x \cdot Y = x(y \cdot G) = y(x \cdot G) = y \cdot X$$</li>
+                    <li>$S$ の $x$ 座標等から HKDF（HMACベース鍵導出関数）を用いてハンドシェイク用・アプリケーション用のセッション鍵を導出。</li>
+                </ol>
+            </div>
+
+            <h4 class="docs-subsubsection-heading reveal-up" id="rsa-pss">認証フェーズ（RSA 署名: RSA-PSS によるなりすまし防止）</h4>
+            <div class="docs-prose reveal-up">
+                <p>攻撃者 Clem による Man-In-The-Middle（MITM）攻撃（自身の ECDHE 公開鍵を送信して中間者攻撃を行う手法）を防ぐため、サーバーは<strong>自身の長期 RSA 秘密鍵 $d_&#123;\text&#123;RSA&#125;&#125; $ を用いてハンドシェイク全体のハッシュに対して署名</strong>を付与します。</p>
+                <ol>
+                    <li>サーバーはここまでのハンドシェイクログのハッシュ値 $H(\text&#123;Handshake\_Messages&#125;)$ を計算。</li>
+                    <li>確率的署名方式 <strong>RSA-PSS</strong>（Probabilistic Signature Scheme: OAEP と同様にハッシュと塩を用いた安全性証明つきパディング）を用いて署名 $\sigma$ を生成。
+                    $$\sigma = \text&#123;Sign&#125;_&#123;d_&#123;\text&#123;RSA&#125;&#125;&#125;(\text&#123;RSA-PSS-Encode&#125;(H(\text&#123;Handshake\_Messages&#125;)))$$</li>
+                    <li>クライアントは、認証局によって検証されたサーバーの RSA 公開鍵 $e_&#123;\text&#123;RSA&#125;&#125; $ を用い、署名 $\sigma$ を検証。
+                    $$\sigma^e \equiv \text&#123;EncodedHash&#125; \pmod n$$</li>
+                </ol>
+                <p>これにより、<strong>通信データの秘匿化・鍵共有（ECDHE）</strong> と <strong>通信相手の身元証明（RSA署名）</strong> が完全に分離され、仮に長期 RSA 秘密鍵 $d_&#123;\text&#123;RSA&#125;&#125; $ が後に漏洩したとしても、ECDHE 側の使い捨て秘密鍵 $x, y$ はメモリ上から破棄されているため、過去の通信データを解読する術は数学的に存在しません。</p>
+            </div>
+        </section>
+
+        <hr class="docs-divider">
+
+        <!-- ==================== 用語集 ==================== -->
+        <section class="docs-section" id="glossary">
+            <span class="docs-section-label reveal-up">09 / GLOSSARY</span>
+            <h2 class="docs-section-heading reveal-up">未説明用語全部！！（あと補足の意味をこめて使っていない用語も）</h2>
+            <div class="docs-prose reveal-up">
+                <p>まあ　私は数年前まで技術ドキュメントが一切読めなかったので、何故あなたが理解できていないのかおおよそ理解しているつもりです。</p>
+            </div>
+
+            <h3 class="docs-subsection-heading reveal-up" id="glossary-concepts">概念・用語</h3>
+            <div class="docs-glossary reveal-up">
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">展延性</div>
+                    <div class="docs-glossary-def">暗号文をいじると、復号後の意味が攻撃者の意図通りに変わってしまう性質</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">オラクル</div>
+                    <div class="docs-glossary-def">神託（情報を提供してくれる存在＝サーバーの応答）を指す暗号用語</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">決定性暗号</div>
+                    <div class="docs-glossary-def">「同じ平文を暗号化すると、毎回100%同じ暗号文になる仕組み」のこと</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">選択平文攻撃 (CPA)</div>
+                    <div class="docs-glossary-def">攻撃者が平文を選んでその暗号文を手に入れることができる環境で行う攻撃手法。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">乗法準同型性</div>
+                    <div class="docs-glossary-def">暗号文どうしを掛け算すると、復号後の平文も掛け算された結果になる性質。中身を変造されやすい脆弱性につながる。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">格子基底縮小アルゴリズム (LLL)</div>
+                    <div class="docs-glossary-def">多次元の格子上から最短のベクトルを見つける数学的手法（数学的な解析手法の一種）。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">適応的選択暗号文攻撃 (CCA2)</div>
+                    <div class="docs-glossary-def">サーバーに暗号文を送り、エラーの種類を手がかりにして正解の平文を探る攻撃。ちなみに「CCA2」の「2」は「適応的（Adaptive）＝CCAバージョン2.0」という意味　🤔</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">CCA1 (Non-adaptive CCA)</div>
+                    <div class="docs-glossary-def">暗号文を解読するオラクルを攻撃前にのみ使える攻撃。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">Feistel（ファイステル）構造</div>
+                    <div class="docs-glossary-def">データを左右に分け、片方の変換結果をもう片方にXORしていく暗号の基本設計パターン。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">MGF (Mask Generation Function)</div>
+                    <div class="docs-glossary-def">任意の長さのデータ（乱数など）から、固定長の仮面（マスク）となる乱数系列を作る関数。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">PFS (Perfect Forward Secrecy)</div>
+                    <div class="docs-glossary-def">「将来サーバーの秘密鍵が盗まれても、過去に通信・保存されたデータは解読できない」というセキュリティの性質。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">HKDF</div>
+                    <div class="docs-glossary-def">HMAC-based Extract-and-Expand Key Derivation Function。共有された秘密の値から、実際に使う安全な暗号鍵を引き出す仕組み。</div>
+                </div>
+            </div>
+
+            <h3 class="docs-subsection-heading reveal-up" id="glossary-symbols">数学記号・変数</h3>
+            <div class="docs-glossary docs-glossary-math reveal-up">
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$p, q$</div>
+                    <div class="docs-glossary-def">相異なる巨大な素数。鍵の生成源。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$n$</div>
+                    <div class="docs-glossary-def">モジュラス（$n = pq$）。暗号演算を行なう剰余環のサイズ。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$\varphi(n)$</div>
+                    <div class="docs-glossary-def">オイラーの $\varphi$ 関数（$\varphi(n) = (p-1)(q-1)$）。秘密鍵の算出に使用。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$e$</div>
+                    <div class="docs-glossary-def">公開指数。暗号化に使う累乗数（一般的に $65537$）。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$d$</div>
+                    <div class="docs-glossary-def">秘密指数。復号に使う累乗数。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$k$</div>
+                    <div class="docs-glossary-def">任意の整数。合同式を等式 $ed = k \cdot \varphi(n) + 1$ に直す際の調整用定数。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$\mathbb&#123;&#123;Z&#125;&#125;_n$</div>
+                    <div class="docs-glossary-def">剰余類環（$0$ から $n-1$ までの整数集合）。メッセージ空間の範囲。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$m$ ($M$)</div>
+                    <div class="docs-glossary-def">平文。暗号化したいデータ。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$c$</div>
+                    <div class="docs-glossary-def">暗号文。暗号化演算（$c \equiv m^e \pmod n$）でできたデータ。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$\hat&#123;m&#125;$</div>
+                    <div class="docs-glossary-def">エンコード済み平文。OAEPでパディングと乱数化を施した整数データ。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$\parallel$</div>
+                    <div class="docs-glossary-def">バイト列結合。データを順番に繋げる操作。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$\oplus$</div>
+                    <div class="docs-glossary-def">排他的論理和（XOR）。マスク処理とその解除に使用。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$k$（バイト長）</div>
+                    <div class="docs-glossary-def">モジュラスのバイトサイズ（2048bit なら 256 バイト）。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$k_0$</div>
+                    <div class="docs-glossary-def">シードバイト長。乱数 $r$ の長さ（例: 32バイト）。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$k_1$</div>
+                    <div class="docs-glossary-def">パディング検証長。改ざん検知用のゼロパディングの長さ（例: 32バイト）。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$mLen$</div>
+                    <div class="docs-glossary-def">平文バイト長。実際に送れる平文の最大サイズ。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$r$</div>
+                    <div class="docs-glossary-def">ランダムシード。暗号化ごとに生成する擬似乱数（CPA耐性用）。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$G, H$</div>
+                    <div class="docs-glossary-def">マスク生成関数（MGF）。任意長のマスク用乱数を生成する関数。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$DB$</div>
+                    <div class="docs-glossary-def">データブロック（$\text&#123;Hash&#125;(L) \parallel \text&#123;PS&#125; \parallel \text&#123;0x01&#125; \parallel M$）。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$\text&#123;Hash&#125;(L)$</div>
+                    <div class="docs-glossary-def">ラベルハッシュ。オプションパラメータ $L$ のハッシュ値。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$\text&#123;PS&#125;$</div>
+                    <div class="docs-glossary-def">パディング文字列。長さ調整用の <code>0x00</code> バイト列。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$maskedDB$</div>
+                    <div class="docs-glossary-def">マスク済み $DB$（$DB \oplus G(r)$）。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$maskedSeed$</div>
+                    <div class="docs-glossary-def">マスク済みシード（$r \oplus H(maskedDB)$）。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$EM$</div>
+                    <div class="docs-glossary-def">エンコードメッセージ（$\text&#123;0x00&#125; \parallel maskedSeed \parallel maskedDB$）。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$c_1, c_2$</div>
+                    <div class="docs-glossary-def">個別暗号文。乗法性の説明で登場する各平文の暗号文。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$r$（攻撃用）</div>
+                    <div class="docs-glossary-def">攻撃用乗数。暗号文を変造するために掛け合わせる値。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$O(\dots)$</div>
+                    <div class="docs-glossary-def">ランダウの記法。計算量の大きさを表す。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$PMS$</div>
+                    <div class="docs-glossary-def">Premaster Secret。TLS 1.2でRSA暗号化して送っていた鍵の元データ。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$MS$</div>
+                    <div class="docs-glossary-def">Master Secret。通信全体を暗号化するための主鍵。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$R_&#123;\text&#123;client&#125;&#125;, R_&#123;\text&#123;server&#125;&#125; $</div>
+                    <div class="docs-glossary-def">クライアント/サーバー乱数。再送攻撃防止用の乱数。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$q$</div>
+                    <div class="docs-glossary-def">楕円曲線群の位数。楕円曲線暗号の素数パラメータ。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$x, y$</div>
+                    <div class="docs-glossary-def">ECDHE エフェメラル秘密鍵。通信ごとに一時生成される使い捨ての秘密鍵。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$G$</div>
+                    <div class="docs-glossary-def">楕円曲線のベースポイント。計算の基準点。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$X, Y$</div>
+                    <div class="docs-glossary-def">ECDHE エフェメラル公開鍵（$X = x \cdot G$, $Y = y \cdot G$）。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$S$</div>
+                    <div class="docs-glossary-def">共有秘密（$S = x \cdot Y = y \cdot X$）。お互いに共有される秘密の値。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$\sigma$</div>
+                    <div class="docs-glossary-def">デジタル署名。サーバーの身元を証明する署名データ。</div>
+                </div>
+                <div class="docs-glossary-item">
+                    <div class="docs-glossary-term">$d_&#123;\text&#123;RSA&#125;&#125;$, $e_&#123;\text&#123;RSA&#125;&#125; $</div>
+                    <div class="docs-glossary-def">サーバーRSA長期鍵対。TLS 1.3で身元認証（署名）のみに使う鍵。</div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="docs-divider">
+
+        <!-- ==================== 補足 ==================== -->
+        <section class="docs-section docs-appendix" id="appendix">
+            <span class="docs-appendix-label reveal-up">APPENDIX</span>
+            <h2 class="docs-section-heading reveal-up">補足</h2>
+            <div class="docs-prose reveal-up">
+                <p>実はカンペ用意してるんですよどんな質問来られても（SINT Docsにコメント機能はまだ実装していませんが...）完璧に答えられるように<br>
+                そのカンペ作成過程で「記事内に書くべきだな」って思ったことでも書いておきます。</p>
+            </div>
+
+            <h3 class="docs-subsection-heading reveal-up" id="why-65537">e=65537の理由</h3>
+            <div class="docs-prose reveal-up">
+                <p>$65537$ は Fermat 素数 $F_4 = 2^&#123;16&#125; + 1$ です。2進数表記で <code>10000000000000001</code> となり、1が2個しか含まれないという特徴があります。</p>
+                <p>これによりバイナリ乗算アルゴリズムを用いる際、16回の自乗演算とたった1回の乗算で暗号化・署名検証が完了し、計算コストを劇的に削減できるためです。</p>
+                <p>※なお、$e=3$ も過去に使われましたが、Coppersmith攻撃などの標的になりやすいため、現在では $e=65537$ が業界標準となっています。</p>
+            </div>
+
+            <h3 class="docs-subsection-heading reveal-up" id="prime-selection">pとqの選定方法！</h3>
+            <div class="docs-prose reveal-up">
+                <p>多分一番大事なコト！</p>
+                <ol>
+                    <li>暗号論的疑似乱数生成機（CSPRNG）....分かりずらいのですが、とにかくデカい乱数を生成します。</li>
+                    <li>最上位ビットを1に固定し（もし最上位ビットが0だとビット長が減ってしまうので）、最下位ビットも1にする（奇数にするため）。</li>
+                    <li>試し割りで3,5,7,11....とかを割って明らかな合成数かどうかを判定する（もちろん合成数だと排除される）</li>
+                    <li>3を突破したらミラー-ラビン素数判定法を何度も実行する</li>
+                    <li>もし4も突破したらクソデカ素数ということになる！</li>
+                </ol>
+            </div>
+
+            <h3 class="docs-subsection-heading reveal-up" id="miller-rabin">ミラー-ラビン素数判定ってなんでしょうね！</h3>
+            <div class="docs-prose reveal-up">
+                <p>判定対象の奇数 $n &gt; 3$ に対し：</p>
+                <ol>
+                    <li><strong>分解:</strong> $n - 1 = 2^s \cdot d$ （$d$ は奇数）となる $s$ と $d$ を求める。</li>
+                    <li><strong>底（Witness）の選定:</strong> $a \in [2, n - 2]$ となる整数の底 $a$ をランダムに選ぶ。</li>
+                    <li><strong>初期計算:</strong> $x \equiv a^d \pmod n$ を計算する。</li>
+                    <li><strong>判定 A:</strong> $x \equiv 1 \pmod n$ または $x \equiv n - 1 \pmod n$ であれば、この底 $a$ において $n$ は「素数候補（Probable Prime）」とし、次のラウンドへ進む。</li>
+                    <li><strong>ループ判定 B:</strong> $r = 1, 2, \dots, s-1$ について以下を繰り返す：
+                        <ul>
+                            <li>$x \equiv x^2 \pmod n$ を計算。</li>
+                            <li>$x \equiv n - 1 \pmod n$ となった場合、この底 $a$ において $n$ は「素数候補」とし、次のラウンドへ進む。</li>
+                        </ul>
+                    </li>
+                    <li><strong>判定失敗:</strong> どのループでも $n - 1$ に到達しなかった場合、$n$ は<strong>確実に合成数</strong>である（$a$ は $n$ の合成数性の証拠＝Witness）。</li>
+                </ol>
+                <p>んで！もし合成数nがミラー-ラビン判定法を誤ってパスしてしまう確率は最大でも1/4であることが証明されています。<br>
+                aを何度も変えてテストを繰り返した場合、そしてその繰り返した回数をkと置く場合<br>
+                誤判定する確率は$(1/4)^k$ですね！</p>
+                <p>k=40の場合、宇宙線でメモリが脳破壊される確率よりも圧倒的に低くなりますし、<br>
+                一般的に多く使われるk=64の場合、「確定で素数」と言ってもほぼ問題ないとされています。</p>
+
+                <div class="docs-callout">
+                    <span class="docs-callout-label">CAUTION</span>
+                    因みにですが：<br>
+                    p-qの値が小さい<br>
+                    p-1の素因数が小さいものだけ<br>
+                    p+1の素因数が小さいものだけ<br>
+                    pとqが互いに素でない<br>
+                    これらは危険なので再試行するようにされています。Pollard's法、Ｗilliam's法、フェルマーの素因数分解法とかで調べると出てくるのではないでしょうか。
+                </div>
+            </div>
+        </section>
+
+</DocsLayout>

@@ -1,0 +1,188 @@
+---
+import Layout from './Layout.astro';
+import KatexLoader from '../components/KatexLoader.astro';
+import '../styles/docs.css';
+
+interface FAQ {
+    q: string;
+    a: string;
+}
+
+interface TOCItem {
+    id: string;
+    label: string;
+}
+
+interface Author {
+    name: string;
+    github?: string;
+    role?: string;
+    specialties?: string[];
+    nationality?: string;
+}
+
+interface Props {
+    title: string;
+    description: string;
+    specId: string;
+    tag: string;
+    publishedDate: string;
+    isoPublishedDate?: string;
+    author?: Author;
+    faqs?: FAQ[];
+    toc?: TOCItem[];
+    useKatex?: boolean;
+}
+
+const {
+    title,
+    description,
+    specId,
+    tag,
+    publishedDate,
+    isoPublishedDate = publishedDate.replace(/\./g, '-'),
+    author = {},
+    faqs = [],
+    toc = [],
+    useKatex = true
+} = Astro.props;
+
+// デフォルトの著者情報
+const defaultAuthor = {
+    name: "AruihaYoru",
+    github: "https://github.com/aruihayoru",
+    role: "It's just A Editor",
+    specialties: ["language", "NumberTheory(Novice)", "Study", "Engineering(apprentice)"],
+    nationality: "JP"
+};
+
+const mergedAuthor = { ...defaultAuthor, ...author };
+
+const defaultPublisher = {
+    name: "Scratch Institute of Number Theory",
+    alternateName: "SINT",
+    url: "https://sint-org.com",
+    logo: "https://sint-org.com/favicon.ico"
+};
+
+// TechArticle スキーマ生成
+const techArticleSchema = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": title,
+    "description": description,
+    "inLanguage": "ja",
+    "datePublished": isoPublishedDate,
+    "dateModified": isoPublishedDate,
+    "author": {
+        "@type": "Person",
+        "name": mergedAuthor.name,
+        "url": mergedAuthor.github,
+        "sameAs": [mergedAuthor.github].filter(Boolean),
+        "jobTitle": mergedAuthor.role,
+        "nationality": {
+            "@type": "Country",
+            "name": mergedAuthor.nationality
+        },
+        "knowsAbout": mergedAuthor.specialties
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": defaultPublisher.name,
+        "alternateName": defaultPublisher.alternateName,
+        "url": defaultPublisher.url,
+        "logo": {
+            "@type": "ImageObject",
+            "url": defaultPublisher.logo
+        }
+    }
+});
+
+// FAQPage スキーマ生成
+const faqSchema = faqs.length > 0 ? JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+        "@type": "Question",
+        "name": faq.q,
+        "acceptedAnswer": {
+            "@type": "Answer",
+            "text": faq.a
+        }
+    }))
+}) : null;
+---
+
+<Layout title={`SINT - ${title}`} description={description}>
+    <Fragment slot="head">
+        {useKatex && <KatexLoader />}
+        <script type="application/ld+json" is:inline set:html={techArticleSchema} />
+        {faqSchema && <script type="application/ld+json" is:inline set:html={faqSchema} />}
+    </Fragment>
+
+    <!-- ヒーローセクション -->
+    <section class="docs-article-hero">
+        <h1 class="docs-title reveal-up">{title}</h1>
+        <div class="docs-article-meta reveal-up" data-reveal-delay="0.1s">
+            <span class="docs-meta-tag">{specId}</span>
+            <span class="docs-meta-tag">{tag}</span>
+            <span>PUBLISHED: {publishedDate}</span>
+            <span>Written by: {mergedAuthor.github ? (
+                <a href={mergedAuthor.github} target="_blank" rel="noopener noreferrer" class="docs-author-link">{mergedAuthor.name}</a>
+            ) : (
+                mergedAuthor.name
+            )}</span>
+        </div>
+    </section>
+
+    <!-- 目次 -->
+    {toc.length > 0 && (
+        <nav class="docs-toc">
+            <h2 class="docs-toc-title">Table of Contents</h2>
+            <ol class="docs-toc-list">
+                {toc.map(item => (
+                    <li><a href={`#${item.id}`}>{item.label}</a></li>
+                ))}
+            </ol>
+        </nav>
+    )}
+
+    <!-- 記事本文 -->
+    <article class="docs-article">
+        <slot />
+
+        <!-- アカデミック・信頼性カード (E-E-A-T) -->
+        <div class="docs-academic-card reveal-up">
+            <!-- 著者情報 -->
+            <div class="docs-card-section">
+                <span class="docs-card-label">DOCUMENT AUTHOR</span>
+                <h3 class="docs-card-title">
+                    {mergedAuthor.github ? (
+                        <a href={mergedAuthor.github} target="_blank" rel="noopener noreferrer" class="docs-author-link">
+                            {mergedAuthor.name} ({mergedAuthor.github.replace(/^https?:\/\/(www\.)?/, '')})
+                        </a>
+                    ) : (
+                        mergedAuthor.name
+                    )}
+                </h3>
+                <p style="font-size: 0.95rem; margin-top: 0.5rem; color: var(--text-muted); line-height: 1.6;">
+                    {mergedAuthor.role} // Specialties: {mergedAuthor.specialties?.join(", ")}
+                </p>
+            </div>
+            <!-- 査読状態 -->
+            <div class="docs-card-section">
+                <span class="docs-card-label">METADATA</span>
+                <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-muted);">
+                    <strong style="color: var(--text-color);">Status:</strong> Registered on SINT Docs<br>
+                    <strong style="color: var(--text-color);">License:</strong> CC BY-SA 2.0<br>
+                    <strong style="color: var(--text-color);">Publisher:</strong> {defaultPublisher.name} ({defaultPublisher.alternateName})
+                </p>
+            </div>
+        </div>
+
+        <!-- 記事ナビゲーション -->
+        <nav class="docs-nav">
+            <a href="/docs">← BACK TO DOCS</a>
+        </nav>
+    </article>
+</Layout>

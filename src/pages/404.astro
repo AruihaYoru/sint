@@ -1,0 +1,239 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="404 Not Found | SINT">
+    <div class="not-found-container">
+        <h1 class="error-code reveal-up">404</h1>
+        <p class="error-message reveal-up" data-reveal-delay="0.1s">
+            お探しのページは存在しません。
+        </p>
+
+        <!-- 予測サジェストボックス（クライアントサイドで計算） -->
+        <div id="suggestion-box" class="suggestion-box hidden reveal-up" data-reveal-delay="0.15s">
+            <p id="suggestion-status" class="suggestion-text blink">計算中.....</p>
+            <div id="suggestion-links-container"></div>
+        </div>
+
+        <a href="/" class="return-button reveal-up" data-reveal-delay="0.2s">
+            <span class="return-button-text">トップページへ戻る</span>
+        </a>
+    </div>
+
+    <script>
+        // 距離の計算
+        function levenshtein(a, b) {
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+                        );
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const box = document.getElementById('suggestion-box');
+            const status = document.getElementById('suggestion-status');
+            const linksContainer = document.getElementById('suggestion-links-container');
+            
+            if (!box || !status || !linksContainer) return;
+
+            // 現在のパス（末尾の / は除去）
+            const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
+            
+            // ルートパスや短すぎる場合は走査すらしない
+            if (currentPath === '/' || currentPath.length < 2) return;
+
+            // まず走査中UIを表示
+            box.classList.remove('hidden');
+
+            try {
+                // 別ファイルからパスリストを取得
+                const res = await fetch('/api/routes.json');
+                if (!res.ok) throw new Error('Failed to fetch routes');
+                const pagePaths = await res.json();
+
+                const threshold = Math.max(3, Math.floor(currentPath.length / 2));
+                
+                // 全パスとの距離を計算
+                const scoredPaths = pagePaths.map(path => ({
+                    path,
+                    dist: levenshtein(currentPath, path)
+                })).filter(item => item.dist > 0 && item.dist <= threshold);
+
+                // 距離順にソート
+                scoredPaths.sort((a, b) => a.dist - b.dist);
+
+                if (scoredPaths.length > 0) {
+                    status.classList.remove('blink');
+                    status.textContent = 'もしかして：';
+                    
+                    // 同率1位、または上位の近いものを取得（最大3つ）
+                    const bestDist = scoredPaths[0].dist;
+                    const bestMatches = scoredPaths.filter(item => item.dist <= bestDist + 1).slice(0, 3);
+                    
+                    bestMatches.forEach((match, index) => {
+                        const link = document.createElement('a');
+                        link.href = match.path;
+                        link.className = 'suggestion-link';
+                        link.textContent = match.path === '/' ? '/ (トップページ)' : match.path;
+                        linksContainer.appendChild(link);
+
+                        if (index < bestMatches.length - 1) {
+                            const separator = document.createElement('span');
+                            separator.className = 'suggestion-separator';
+                            separator.textContent = ' または ';
+                            linksContainer.appendChild(separator);
+                        }
+                    });
+                } else {
+                    // 見つからなかったらボックスごと消す
+                    box.classList.add('hidden');
+                }
+            } catch (e) {
+                box.classList.add('hidden');
+            }
+        });
+    </script>
+</Layout>
+
+<style>
+    .not-found-container {
+        min-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 4rem 2rem;
+        background-color: var(--bg-primary);
+    }
+
+    .error-code {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: clamp(6rem, 15vw, 12rem);
+        font-weight: 700;
+        line-height: 1;
+        margin: 0;
+        color: var(--text-primary);
+        letter-spacing: -0.05em;
+    }
+
+    .error-message {
+        font-size: 1.2rem;
+        line-height: 1.8;
+        color: var(--text-secondary);
+        margin: 1rem 0 1rem;
+        letter-spacing: 0.1em;
+    }
+
+    .suggestion-box {
+        margin: 1rem 0 3rem;
+        padding: 1.5rem 2.5rem;
+        border: 1px dashed var(--text-secondary);
+        background: rgba(255, 255, 255, 0.02);
+        transition: all 0.3s ease;
+        min-width: 300px;
+    }
+    
+    .suggestion-box.hidden {
+        display: none;
+    }
+
+    .suggestion-text {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.8rem;
+    }
+
+    .blink {
+        animation: blink-anim 1.5s infinite;
+    }
+
+    @keyframes blink-anim {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+    }
+
+    #suggestion-links-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .suggestion-separator {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .suggestion-link {
+        font-family: 'Space Grotesk', monospace;
+        font-size: 1.3rem;
+        color: var(--text-primary);
+        text-decoration: underline;
+        text-decoration-color: var(--text-secondary);
+        text-underline-offset: 4px;
+        transition: color 0.3s ease, text-decoration-color 0.3s ease;
+    }
+
+    .suggestion-link:hover {
+        color: var(--bg-primary);
+        background: var(--text-primary);
+        text-decoration: none;
+    }
+
+    .return-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem 3rem;
+        border: 1px solid var(--text-primary);
+        color: var(--text-primary);
+        text-decoration: none;
+        font-family: 'Space Grotesk', 'Noto Sans JP', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: 0.1em;
+        transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .return-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--text-primary);
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        z-index: -1;
+    }
+
+    .return-button:hover {
+        color: var(--bg-primary);
+        border-color: var(--text-primary);
+    }
+
+    .return-button:hover::before {
+        transform: scaleX(1);
+        transform-origin: left;
+    }
+</style>

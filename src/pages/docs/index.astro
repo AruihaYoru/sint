@@ -1,0 +1,175 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+// Fetch all astro pages under the current folder using Vite's glob
+const posts = import.meta.glob('./*.astro', { eager: true });
+
+// Filter out the index page and construct URLs dynamically
+const articles = Object.entries(posts)
+    .map(([filePath, module]) => {
+        const name = filePath.replace(/^\.\//, '').replace(/\.astro$/, '');
+        const url = `/docs/${name}`;
+        return {
+            ...module,
+            url,
+            filePath
+        };
+    })
+    .filter(post => !post.filePath.endsWith('index.astro') && post.title)
+    .sort((a, b) => {
+        const dateA = new Date(a.publishedDate?.replace(/\./g, '-') || 0).getTime();
+        const dateB = new Date(b.publishedDate?.replace(/\./g, '-') || 0).getTime();
+        return dateB - dateA;
+    });
+---
+
+<Layout title="SINT - Docs / 技術仕様書" description="Scratch数論研究会(SINT)の技術仕様書、学術資料、および研究ノート。">
+    <!-- ヒーローセクション -->
+    <section class="faq-hero">
+        <h1 class="apply-title reveal-up">DOCS</h1>
+        <p class="apply-subtitle reveal-up" data-reveal-delay="0.1s">RESEARCH & SPECIFICATIONS // 技術仕様・研究ノート</p>
+    </section>
+
+    <!-- 記事一覧セクション -->
+    <section class="content-section">
+        <span class="section-num reveal-up">01 / ARCHIVES</span>
+        <h2 class="section-text reveal-up" style="margin-bottom: 2rem;">公開仕様書・研究資料</h2>
+
+        <div class="docs-list">
+            {articles.map(article => (
+                <div class="docs-item reveal-up">
+                    <div class="docs-meta">
+                        <span class="docs-num">{article.specId}</span>
+                        <span class="docs-tag">{article.tag}</span>
+                    </div>
+                    <div class="docs-content">
+                        <h3 class="docs-title">
+                            <a href={article.url}>{article.title}</a>
+                        </h3>
+                        <p class="docs-desc">
+                            {article.description}
+                        </p>
+                        <div class="docs-footer-meta">
+                            <span class="docs-date">PUBLISHED: {article.publishedDate}</span>
+                            <span class="docs-date">Written by: {article.author}</span>
+                            <a href={article.url} class="docs-readmore">READ SPECIFICATION ↗</a>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    </section>
+</Layout>
+
+<style>
+.docs-list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 2rem;
+}
+
+.docs-item {
+    border-bottom: 1px solid var(--grid-color);
+    padding: 3rem 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    transition: border-color 0.5s;
+}
+
+@media (min-width: 768px) {
+    .docs-item {
+        grid-template-columns: 0.3fr 1fr;
+        gap: 3rem;
+    }
+}
+
+.docs-item:first-child {
+    border-top: 1px solid var(--grid-color);
+}
+
+.docs-item:hover {
+    border-bottom-color: var(--border-color);
+}
+
+.docs-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.docs-num {
+    font-family: var(--font-en);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text-color);
+}
+
+.docs-tag {
+    display: inline-block;
+    font-family: var(--font-en);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 3px 8px;
+    border: 1px solid var(--text-color);
+    align-self: flex-start;
+}
+
+.docs-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.docs-title a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 1.6rem;
+    font-weight: 900;
+    line-height: 1.3;
+    transition: opacity 0.3s;
+}
+
+.docs-title a:hover {
+    opacity: 0.7;
+}
+
+.docs-desc {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text-muted);
+}
+
+.docs-footer-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.docs-date {
+    font-family: var(--font-en);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.docs-readmore {
+    font-family: var(--font-en);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-color);
+    text-decoration: none;
+    border-bottom: 1px solid var(--text-color);
+    padding-bottom: 2px;
+    transition: opacity 0.3s;
+}
+
+.docs-readmore:hover {
+    opacity: 0.7;
+}
+</style>
