@@ -1,8 +1,20 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const websiteSchema = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Scratch数論研究会 (SINT)",
+    "alternateName": "SINT",
+    "url": "https://sint-org.com",
+    "description": "Scratch数論研究会 (SINT) は、Scratch上で数論や数学に関連するプロジェクトを作成・研究するコミュニティです。"
+});
 ---
 
-<Layout>
+<Layout title="Scratch数論研究会 (SINT)" description="Scratch数論研究会 (SINT) は、Scratch上で数論や数学に関連するプロジェクトを作成・研究するコミュニティです。">
+    <Fragment slot="head">
+        <script type="application/ld+json" is:inline set:html={websiteSchema} />
+    </Fragment>
     <!-- ヒーローセクション -->
     <section id="hero">
         <!-- 正円でクリップ -->
