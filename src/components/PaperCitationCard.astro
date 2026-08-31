@@ -1,0 +1,187 @@
+---
+interface Props {
+	title: string;
+	author: string;
+	journal?: string;
+	year?: string | number;
+	url?: string;
+}
+
+const {
+	title,
+	author,
+	journal = "Preprint",
+	year = "2026",
+	url
+} = Astro.props;
+---
+
+<div class="paper-citation-card reveal-up">
+	<div class="citation-header">
+		<div class="citation-badge">
+			<span class="badge-dot"></span>
+			<span>PRIMARY SOURCE / PREPRINT</span>
+		</div>
+		<span class="citation-year">{year}</span>
+	</div>
+
+	<div class="citation-body">
+		<h3 class="paper-title">
+			{url ? (
+				<a href={url} target="_blank" rel="noopener noreferrer" class="paper-link">
+					{title}
+				</a>
+			) : (
+				title
+			)}
+		</h3>
+
+		<div class="paper-meta-grid">
+			<div class="meta-item">
+				<span class="meta-label">AUTHOR</span>
+				<span class="meta-value">{author}</span>
+			</div>
+			<div class="meta-item">
+				<span class="meta-label">PUBLICATION</span>
+				<span class="meta-value">{journal} ({year})</span>
+			</div>
+			{url && (
+				<div class="meta-item meta-item-link">
+					<span class="meta-label">ACCESS</span>
+					<a href={url} target="_blank" rel="noopener noreferrer" class="access-btn">
+						View Paper ↗
+					</a>
+				</div>
+			)}
+		</div>
+	</div>
+</div>
+
+<style>
+.paper-citation-card {
+	border: 1px solid var(--border-color);
+	background-color: var(--bg-color);
+	width: 100%;
+	margin: 2rem 0;
+	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+	transition: border-color 0.5s, box-shadow 0.3s;
+}
+
+body.light-theme .paper-citation-card {
+	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+.citation-header {
+	border-bottom: 1px solid var(--border-color);
+	padding: 12px 20px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background-color: var(--grid-color);
+}
+
+.citation-badge {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-family: var(--font-en);
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.15em;
+	color: var(--text-color);
+}
+
+.badge-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background-color: var(--text-color);
+}
+
+.citation-year {
+	font-family: var(--font-en);
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--text-muted);
+}
+
+.citation-body {
+	padding: 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.paper-title {
+	font-size: 1.25rem;
+	font-weight: 800;
+	line-height: 1.5;
+	margin: 0;
+	color: var(--text-color);
+}
+
+.paper-link {
+	color: var(--text-color);
+	text-decoration: none;
+	border-bottom: 1px solid transparent;
+	transition: opacity 0.3s, border-color 0.3s;
+}
+
+.paper-link:hover {
+	opacity: 0.75;
+	border-bottom-color: var(--text-color);
+}
+
+.paper-meta-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--grid-color);
+}
+
+@media (min-width: 640px) {
+	.paper-meta-grid {
+		grid-template-columns: 1.2fr 1.2fr 1fr;
+		align-items: center;
+	}
+}
+
+.meta-item {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+}
+
+.meta-label {
+	font-family: var(--font-en);
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.15em;
+	color: var(--text-muted);
+}
+
+.meta-value {
+	font-size: 0.95rem;
+	color: var(--text-color);
+	font-weight: 500;
+}
+
+.access-btn {
+	display: inline-block;
+	font-family: var(--font-en);
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	color: var(--text-color);
+	text-decoration: none;
+	padding: 6px 12px;
+	border: 1px solid var(--text-color);
+	width: fit-content;
+	transition: background-color 0.3s, color 0.3s, opacity 0.3s;
+}
+
+.access-btn:hover {
+	opacity: 0.7;
+}
+</style>

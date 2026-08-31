@@ -2,6 +2,7 @@
 import Layout from './Layout.astro';
 import KatexLoader from '../components/KatexLoader.astro';
 import '../styles/docs.css';
+import { getAuthor, type Author } from '../data/authors';
 
 interface FAQ {
     q: string;
@@ -13,14 +14,6 @@ interface TOCItem {
     label: string;
 }
 
-interface Author {
-    name: string;
-    github?: string;
-    role?: string;
-    specialties?: string[];
-    nationality?: string;
-}
-
 interface Props {
     title: string;
     description: string;
@@ -28,7 +21,7 @@ interface Props {
     tag: string;
     publishedDate: string;
     isoPublishedDate?: string;
-    author?: Author;
+    author?: string | Author;
     faqs?: FAQ[];
     toc?: TOCItem[];
     useKatex?: boolean;
@@ -41,22 +34,20 @@ const {
     tag,
     publishedDate,
     isoPublishedDate = publishedDate.replace(/\./g, '-'),
-    author = {},
+    author = "aruihayoru",
     faqs = [],
     toc = [],
     useKatex = true
 } = Astro.props;
 
-// デフォルトの著者情報
-const defaultAuthor = {
-    name: "AruihaYoru",
-    github: "https://github.com/aruihayoru",
-    role: "It's just A Editor",
-    specialties: ["language", "NumberTheory(Novice)", "Study", "Engineering(apprentice)"],
-    nationality: "JP"
-};
-
-const mergedAuthor = { ...defaultAuthor, ...author };
+// 著者情報の解決
+let mergedAuthor: Author;
+if (typeof author === 'string') {
+    mergedAuthor = getAuthor(author);
+} else {
+    const defaultAuthor = getAuthor('aruihayoru');
+    mergedAuthor = { ...defaultAuthor, ...author };
+}
 
 const defaultPublisher = {
     name: "Scratch Institute of Number Theory",

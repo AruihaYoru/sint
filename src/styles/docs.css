@@ -584,4 +584,65 @@ body.light-theme .docs-academic-card {
     transition: color 0.5s;
 }
 
+/* ============================================
+   コードブロック / 実数表示ブロック
+   背景を透明にすることでKaTeXのテキスト色が
+   ページテーマに自動追従し、色の衝突が起きない
+   ============================================ */
+.docs-code-block {
+    background-color: transparent;
+    color: inherit;
+    border: 1px solid var(--grid-color);
+    font-family: var(--font-mono, 'Courier New', monospace);
+    line-height: 1.7;
+    letter-spacing: 0.04em;
+    padding: 1.5rem 1.75rem;
+    margin: 1.5rem 0;
+    border-radius: 2px;
+    transition: border-color 0.5s;
+    text-align: center;
+    justify-content: center;
+    display: flex;
+}
 
+@media (min-width: 768px) {
+    /* 十分な表示スペースがあるときは、折り返さずに1行で表示する */
+    .docs-code-block.docs-pi-value {
+        white-space: nowrap;
+        text-align-last: auto;
+    }
+}
+
+
+
+.footnote {
+    font-size: 0.75em;
+    vertical-align: super;
+    text-decoration: underline;
+    line-height: 0;
+    color: #000000;
+    cursor: help;
+    position: relative;
+    display: inline-block;
+}
+
+.footnote:before {
+    content: "["
+}
+
+.footnote:hover::after {
+    content: attr(data-text);
+    position: absolute;
+    bottom: 100%;
+    left: 100%;
+    font-size: 16px;
+    width: 250px;
+    white-space: normal;
+    line-height: 1.4;
+    background-color: #ffffff;
+    color: #000000;
+    padding: 12px 25px 12px 10px;
+    border: 1px solid #ffffff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 999;
+}

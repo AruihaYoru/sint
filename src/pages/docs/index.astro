@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { getAuthor } from '../../data/authors';
 
 // Fetch all astro pages under the current folder using Vite's glob
 const posts = import.meta.glob('./*.astro', { eager: true });
@@ -15,10 +16,10 @@ const articles = Object.entries(posts)
             filePath
         };
     })
-    .filter(post => !post.filePath.endsWith('index.astro') && post.title)
+    .filter(post => !post.filePath.endsWith('index.astro') && (post as any).title)
     .sort((a, b) => {
-        const dateA = new Date(a.publishedDate?.replace(/\./g, '-') || 0).getTime();
-        const dateB = new Date(b.publishedDate?.replace(/\./g, '-') || 0).getTime();
+        const dateA = new Date((a as any).publishedDate?.replace(/\./g, '-') || 0).getTime();
+        const dateB = new Date((b as any).publishedDate?.replace(/\./g, '-') || 0).getTime();
         return dateB - dateA;
     });
 ---
@@ -51,7 +52,7 @@ const articles = Object.entries(posts)
                         </p>
                         <div class="docs-footer-meta">
                             <span class="docs-date">PUBLISHED: {article.publishedDate}</span>
-                            <span class="docs-date">Written by: {article.author}</span>
+                            <span class="docs-date">Written by: {typeof (article as any).author === 'string' ? getAuthor((article as any).author).name : ((article as any).author?.name || (article as any).author || 'Unknown')}</span>
                             <a href={article.url} class="docs-readmore">READ SPECIFICATION ↗</a>
                         </div>
                     </div>
