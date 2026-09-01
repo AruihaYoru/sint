@@ -19,7 +19,7 @@ export const authors: Record<string, Author> = {
     okawa: {
         id: "okawa",
         name: "Kohei Okawa",
-        github: "https://scratch.mit.edu/users/ofutoniniru/",
+        github: "https://sint-org.academia.edu/KoheiOkawa",
         role: "Researcher",
         specialties: ["Geometric Number Theory", "Ihara zeta function", "Ramanujan graph"],
         nationality: "JP"
