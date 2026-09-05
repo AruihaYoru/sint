@@ -1,0 +1,11 @@
+# クロール・インデックス要求を送信したい URL のリスト (1行に1つのURL)
+# トップページ (https://sint-org.com/) 以外の全公開ページ
+
+https://sint-org.com/apply
+https://sint-org.com/chronicle
+https://sint-org.com/faq
+https://sint-org.com/mofumofu
+https://sint-org.com/docs/
+https://sint-org.com/docs/king-property-mzv
+https://sint-org.com/docs/rsa-encryption
+https://sint-org.com/docs/smoothest-ball

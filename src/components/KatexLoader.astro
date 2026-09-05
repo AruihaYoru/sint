@@ -18,5 +18,95 @@
                 throwOnError: false
             });
         }
+
+        // 自前実装版 Copy-tex: KaTeX数式の選択コピー時に LaTeX ソース ($ ... $ / $$ ... $$) に置換
+        document.addEventListener("copy", function(event) {
+            const selection = window.getSelection();
+            if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
+                return;
+            }
+
+            const range = selection.getRangeAt(0);
+            const commonAncestor = range.commonAncestorContainer;
+            const commonEl = commonAncestor.nodeType === Node.ELEMENT_NODE ? commonAncestor : commonAncestor.parentElement;
+
+            // 選択範囲内に .katex が含まれているかチェック
+            if (!commonEl || (!commonEl.closest('.katex') && !commonEl.querySelector('.katex'))) {
+                return; // 数式が含まれない場合はブラウザ標準のコピー処理を行う
+            }
+
+            const fragment = range.cloneContents();
+
+            // ディスプレイ数式 (.katex-display) の置換
+            const displayElements = Array.from(fragment.querySelectorAll('.katex-display'));
+            displayElements.forEach(displayEl => {
+                const annotation = displayEl.querySelector('annotation[encoding="application/x-tex"]');
+                if (annotation && annotation.textContent) {
+                    const texStr = `\n$$ ${annotation.textContent} $$\n`;
+                    displayEl.parentNode.replaceChild(document.createTextNode(texStr), displayEl);
+                }
+            });
+
+            // インライン数式 (.katex) の置換
+            const katexElements = Array.from(fragment.querySelectorAll('.katex'));
+            katexElements.forEach(katexEl => {
+                if (!katexEl.parentNode) return; // 既にディスプレイ数式の置換で削除済み
+                const annotation = katexEl.querySelector('annotation[encoding="application/x-tex"]');
+                if (annotation && annotation.textContent) {
+                    const isDisplay = katexEl.classList.contains('katex-display') || katexEl.closest('.katex-display') !== null;
+                    const texStr = isDisplay ? `\n$$ ${annotation.textContent} $$\n` : `$${annotation.textContent}$`;
+                    katexEl.parentNode.replaceChild(document.createTextNode(texStr), katexEl);
+                }
+            });
+
+            // 選択範囲が KaTeX 要素の内部で開始/終了している場合のフォールバック処理
+            const closestKatex = commonEl.closest('.katex');
+            if (closestKatex && fragment.childNodes.length > 0 && !fragment.querySelector('.katex')) {
+                const annotation = closestKatex.querySelector('annotation[encoding="application/x-tex"]');
+                if (annotation && annotation.textContent) {
+                    const isDisplay = closestKatex.classList.contains('katex-display') || closestKatex.closest('.katex-display') !== null;
+                    const texStr = isDisplay ? `\n$$ ${annotation.textContent} $$\n` : `$${annotation.textContent}$`;
+                    fragment.replaceChildren(document.createTextNode(texStr));
+                }
+            }
+
+            const container = document.createElement('div');
+            container.appendChild(fragment);
+
+            // プレーンテキスト抽出ヘルパー
+            function extractPlainText(node) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    return node.nodeValue || '';
+                }
+                if (node.nodeType !== Node.ELEMENT_NODE) {
+                    return '';
+                }
+                
+                const tag = node.tagName.toLowerCase();
+                if (tag === 'br') return '\n';
+
+                let result = '';
+                for (let child of node.childNodes) {
+                    result += extractPlainText(child);
+                }
+
+                const isBlock = ['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'tr', 'blockquote', 'section'].includes(tag);
+                if (isBlock) {
+                    result = '\n' + result + '\n';
+                }
+                return result;
+            }
+
+            let plainText = extractPlainText(container)
+                .replace(/\r\n/g, '\n')
+                .replace(/\n{3,}/g, '\n\n')
+                .trim();
+
+            if (event.clipboardData) {
+                event.clipboardData.setData('text/plain', plainText);
+                event.clipboardData.setData('text/html', container.innerHTML);
+                event.preventDefault();
+            }
+        });
     });
 </script>
