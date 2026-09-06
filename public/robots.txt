@@ -1,3 +1,53 @@
+# Google
+User-agent: Googlebot
+User-agent: Google-Extended
+Allow: /
+
+# OpenAI
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: OAI-SearchBot
+Allow: /
+
+# Anthropic
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+User-agent: Claude-Web
+Allow: /
+
+
+# Amazon
+User-agent: Amazonbot
+Disallow: /
+
+# TikTok
+User-agent: Bytespider
+Disallow: /
+
+# Meta
+User-agent: Meta-ExternalAgent
+User-agent: FacebookBot
+Disallow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Disallow: /
+
+# Apple
+User-agent: Applebot-Extended
+Disallow: /
+
+# Common Crawl
+User-agent: CCBot
+Disallow: /
+
+# So longといったところ
+User-agent: cohere-ai
+User-agent: Diffbot
+User-agent: YouBot
+User-agent: ImagesiftBot
+Disallow: /
+
 User-agent: *
 Allow: /
 Disallow: /api/
