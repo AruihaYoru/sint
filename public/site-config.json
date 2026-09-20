@@ -6,7 +6,7 @@
             "title": "ABOUT",
             "links": [
                 { "label": "TOP PAGE", "href": "/" },
-                { "label": "クロニクル", "href": "/chronicle" },
+                { "label": "クロニクル (Academia.edu)", "href": "https://sint-org.academia.edu/KoheiOkawa", "external": true },
                 { "label": "Docs (技術仕様書)", "href": "/docs" },
                 { "label": "FAQ / よくある質問", "href": "/faq" }
             ]

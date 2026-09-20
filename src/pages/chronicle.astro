@@ -2,10 +2,27 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="SINT - Chronicle / 設立の記録" description="Scratch数論研究会(SINT)の設立に至るまでの記録。創設者ofutoniniruが指導教官を得るまで、学術誌への挑戦の全記録。">
-    <section class="chronicle-hero">
+<Layout title="SINT - Chronicle / 設立の記録 (Academia.edu)" description="Scratch数論研究会(SINT)創設者・大川航平の論文および研究実績（Academia.edu）へ移動します。">
+    <Fragment slot="head">
+        <meta http-equiv="refresh" content="0; url=https://sint-org.academia.edu/KoheiOkawa" />
+        <script is:inline>
+            window.location.replace("https://sint-org.academia.edu/KoheiOkawa");
+        </script>
+    </Fragment>
+
+    <section class="chronicle-hero" style="min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
         <h1 class="apply-title reveal-up">CHRONICLE</h1>
-        <p class="apply-subtitle reveal-up" data-reveal-delay="0.1s">設立の記録 — 一高校生が研究者になるまでの軌跡</p>
+        <p class="apply-subtitle reveal-up" data-reveal-delay="0.1s" style="margin-top: 1rem;">
+            大川航平 (Kohei Okawa) の Academia.edu へ移動しています...
+        </p>
+        <p class="reveal-up" data-reveal-delay="0.2s" style="margin-top: 2rem;">
+            自動的に切り替わらない場合は、以下のリンクをクリックしてください。
+        </p>
+        <div style="margin-top: 2rem;">
+            <a href="https://sint-org.academia.edu/KoheiOkawa" class="apply-button" style="display: inline-block;">
+                <span class="apply-button-text">Academia.edu を開く ↗</span>
+            </a>
+        </div>
     </section>
 
     <section class="chronicle-section">
