@@ -146,6 +146,60 @@ export async function saveSpec(spec: Partial<SpecPost>, isNew: boolean): Promise
   }
 }
 
+export interface PublicAuthor {
+  username: string;
+  role: 'admin' | 'editor';
+  name?: string;
+  bio?: string;
+  roleTitle?: string;
+  github?: string;
+  specialties?: string[];
+  nationality?: string;
+}
+
+export async function fetchAuthors(): Promise<PublicAuthor[]> {
+  try {
+    const res = await fetch(`${getApiBaseUrl()}/api/authors`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.authors || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchAuthorByUsername(username: string): Promise<PublicAuthor | null> {
+  try {
+    const res = await fetch(`${getApiBaseUrl()}/api/authors/${encodeURIComponent(username)}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.author || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function updateProfile(data: Partial<PublicAuthor>): Promise<{ success: boolean; error?: string; profile?: PublicAuthor }> {
+  const token = getToken();
+  if (!token) return { success: false, error: 'ログインが必要です' };
+
+  try {
+    const res = await fetch(`${getApiBaseUrl()}/api/auth/profile`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    const result = await res.json();
+    if (!res.ok) return { success: false, error: result.error || 'プロフィールの更新に失敗しました' };
+    return { success: true, profile: result.profile };
+  } catch (err: any) {
+    return { success: false, error: err.message || '通信エラー' };
+  }
+}
+
 export async function deleteSpec(slug: string): Promise<{ success: boolean; error?: string }> {
   const token = getToken();
   if (!token) return { success: false, error: 'ログインが必要です' };

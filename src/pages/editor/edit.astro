@@ -54,7 +54,8 @@ import KatexLoader from '../../components/KatexLoader.astro';
                 <div class="form-row">
                     <div class="form-group flex-1">
                         <label for="author">AUTHOR</label>
-                        <input type="text" id="author" placeholder="執筆者名" value="Collaborator" />
+                        <input type="text" id="author" placeholder="執筆者名" list="authorsList" value="" />
+                        <datalist id="authorsList"></datalist>
                     </div>
                     <div class="form-group flex-1">
                         <label for="publishedDate">PUBLISHED DATE</label>
@@ -86,20 +87,32 @@ import KatexLoader from '../../components/KatexLoader.astro';
 
 <script>
     import { marked } from 'marked';
-    import { getToken, fetchSpecBySlug, saveSpec, verifySession } from '../../lib/api';
+    import { getToken, fetchSpecBySlug, saveSpec, verifySession, fetchAuthors } from '../../lib/api';
 
     const token = getToken();
     if (!token) {
         window.location.href = '/editor/login';
     } else {
-        // Verify token validity in background
-        verifySession().then(({ valid }) => {
+        // Verify token validity in background & auto-fill author
+        verifySession().then(({ valid, user }) => {
             if (!valid) {
                 alert('ログインセッションの有効期限が切れています。再ログインしてください。');
                 window.location.href = '/editor/login';
+            } else if (isNew && authorInput && !authorInput.value) {
+                authorInput.value = user?.name || user?.username || 'Ofuneko';
             }
         });
     }
+
+    // Populate authors datalist from API
+    fetchAuthors().then((authors) => {
+        const dl = document.getElementById('authorsList');
+        if (dl && authors && authors.length > 0) {
+            dl.innerHTML = authors
+                .map((a) => `<option value="${a.name || a.username}">${a.roleTitle ? `${a.roleTitle} - ` : ''}${a.bio ? a.bio.slice(0, 30) : ''}</option>`)
+                .join('');
+        }
+    });
 
     const urlParams = new URLSearchParams(window.location.search);
     const editSlug = urlParams.get('slug');

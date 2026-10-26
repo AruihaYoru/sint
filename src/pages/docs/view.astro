@@ -50,6 +50,7 @@ import '../../styles/docs.css';
                 <p style="font-size: 0.95rem; margin-top: 0.5rem; color: var(--text-muted); line-height: 1.6;" id="authorCardMeta">
                     Contributor // SINT Researcher
                 </p>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem; color: var(--text-color); line-height: 1.6; display: none;" id="authorCardBio"></p>
             </div>
             <!-- 査読状態 -->
             <div class="docs-card-section">
@@ -71,7 +72,7 @@ import '../../styles/docs.css';
 
 <script>
     import { marked } from 'marked';
-    import { fetchSpecBySlug, getToken } from '../../lib/api';
+    import { fetchSpecBySlug, getToken, fetchAuthorByUsername } from '../../lib/api';
 
     const params = new URLSearchParams(window.location.search);
     const slug = params.get('slug');
@@ -88,6 +89,7 @@ import '../../styles/docs.css';
     const docsTocList = document.getElementById('docsTocList');
     const authorCardName = document.getElementById('authorCardName');
     const authorCardMeta = document.getElementById('authorCardMeta');
+    const authorCardBio = document.getElementById('authorCardBio');
     const editSpecBtn = document.getElementById('editSpecBtn') as HTMLAnchorElement;
 
     if (getToken() && slug && editSpecBtn) {
@@ -117,9 +119,23 @@ import '../../styles/docs.css';
                 leadContainer.style.display = 'block';
             }
 
-            if (specAuthorEl) specAuthorEl.textContent = spec.author || 'Collaborator';
-            if (authorCardName) authorCardName.textContent = spec.author || 'Collaborator';
-            if (authorCardMeta) authorCardMeta.textContent = `${spec.author || 'Collaborator'} // Registered Author on SINT Docs`;
+            const authorName = spec.author || 'Collaborator';
+            if (specAuthorEl) specAuthorEl.textContent = authorName;
+            if (authorCardName) authorCardName.textContent = authorName;
+
+            // Load author Bio and metadata from API
+            fetchAuthorByUsername(authorName).then(author => {
+                if (author) {
+                    if (authorCardName) authorCardName.textContent = author.name || author.username;
+                    if (authorCardMeta) authorCardMeta.textContent = `${author.roleTitle || author.role} // ${author.nationality || 'SINT'} Researcher`;
+                    if (authorCardBio && author.bio) {
+                        authorCardBio.textContent = author.bio;
+                        authorCardBio.style.display = 'block';
+                    }
+                } else {
+                    if (authorCardMeta) authorCardMeta.textContent = `${authorName} // SINT Docs Author`;
+                }
+            });
 
             if (specBodyEl) {
                 // Configure marked renderer for SINT typography
