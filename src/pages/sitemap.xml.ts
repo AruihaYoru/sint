@@ -15,10 +15,12 @@ export const GET: APIRoute = async () => {
         .replace(/\.astro$/, '')
         .replace(/\/index$/, '/');
       
-      // 除外条件（404ページ、APIルート、動的ルーティングなど）
+      // 除外条件（404ページ、APIルート、管理画面エディタ、動的表示テンプレートなど）
       if (
         cleanPath === '/404' || 
         cleanPath.startsWith('/api') || 
+        cleanPath.startsWith('/editor') || 
+        cleanPath === '/docs/view' || 
         cleanPath.includes('[')
       ) {
         return null;

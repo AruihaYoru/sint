@@ -1,0 +1,215 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="SINT - SPEC EDITOR LOGIN" description="SINT仕様書管理・編集ログイン">
+    <div class="login-container">
+        <div class="login-card reveal-up">
+            <span class="login-badge">SINT INTERNAL // AUTH</span>
+            <h1 class="login-title">SPEC EDITOR LOGIN</h1>
+            <p class="login-desc">仕様書の作成・改訂を行うための管理者認証です。</p>
+
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="apiUrl">API BASE URL</label>
+                    <input type="text" id="apiUrl" placeholder="http://localhost:8000" required />
+                    <span class="help-text">APIサーバーのURL（ローカル動作時は http://localhost:8000 または https://api.sint-org.com）</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="username">USERNAME</label>
+                    <input type="text" id="username" placeholder="admin" required autocomplete="username" />
+                </div>
+
+                <div class="form-group">
+                    <label for="password">PASSWORD</label>
+                    <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password" />
+                </div>
+
+                <div id="errorMsg" class="error-msg" style="display: none;"></div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    LOG IN ↗
+                </button>
+            </form>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { getApiBaseUrl, setApiBaseUrl, setToken, normalizeApiUrl } from '../../lib/api';
+
+    const form = document.getElementById('loginForm') as HTMLFormElement;
+    const apiUrlInput = document.getElementById('apiUrl') as HTMLInputElement;
+    const usernameInput = document.getElementById('username') as HTMLInputElement;
+    const passwordInput = document.getElementById('password') as HTMLInputElement;
+    const errorMsg = document.getElementById('errorMsg') as HTMLDivElement;
+    const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+
+    if (apiUrlInput) {
+        apiUrlInput.value = getApiBaseUrl();
+    }
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorMsg.style.display = 'none';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'AUTHENTICATING...';
+
+        const apiUrl = normalizeApiUrl(apiUrlInput.value);
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+
+        setApiBaseUrl(apiUrl);
+
+        try {
+            const res = await fetch(`${apiUrl}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const contentType = res.headers.get('content-type') || '';
+            let data: any = {};
+            if (contentType.includes('application/json')) {
+                data = await res.json();
+            } else {
+                const text = await res.text();
+                throw new Error(`サーバーから予期しないレスポンスが返されました (Status: ${res.status}): ${text.slice(0, 100)}`);
+            }
+
+            if (res.ok && data.success && data.token) {
+                setToken(data.token);
+                window.location.href = '/editor';
+            } else {
+                errorMsg.textContent = data.error || `ログインに失敗しました (Status: ${res.status})`;
+                errorMsg.style.display = 'block';
+            }
+        } catch (err: any) {
+            errorMsg.textContent = 'APIサーバーへの接続エラー: ' + (err.message || '');
+            errorMsg.style.display = 'block';
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'LOG IN ↗';
+        }
+    });
+</script>
+
+<style>
+.login-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 480px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    padding: 3rem 2.5rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+}
+
+.login-badge {
+    display: inline-block;
+    font-family: var(--font-en);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    padding: 3px 8px;
+    border: 1px solid #111827;
+    margin-bottom: 1.5rem;
+    color: #111827;
+}
+
+.login-title {
+    font-family: var(--font-en);
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+    color: #111827;
+}
+
+.login-desc {
+    font-size: 0.95rem;
+    color: #4b5563;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-family: var(--font-en);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #374151;
+}
+
+.form-group input {
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    color: #111827;
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.form-group input:focus {
+    border-color: #111827;
+    box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.1);
+}
+
+.help-text {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.error-msg {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+}
+
+.submit-btn {
+    margin-top: 1rem;
+    background: var(--text-color);
+    color: var(--bg-color, #0a0a0a);
+    font-family: var(--font-en);
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    padding: 1rem;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.submit-btn:hover {
+    opacity: 0.85;
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+</style>

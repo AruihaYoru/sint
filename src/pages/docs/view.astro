@@ -1,0 +1,212 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import KatexLoader from '../../components/KatexLoader.astro';
+import '../../styles/docs.css';
+---
+
+<Layout title="SINT - Specification" description="SINT仕様書・研究資料">
+    <Fragment slot="head">
+        <KatexLoader />
+    </Fragment>
+
+    <!-- ヒーローセクション（元記事 DocsLayout と完全同一） -->
+    <section class="docs-article-hero">
+        <h1 class="docs-title reveal-up is-revealed" id="specTitle">Loading Specification...</h1>
+        <div class="docs-article-meta reveal-up is-revealed" data-reveal-delay="0.1s">
+            <span class="docs-meta-tag" id="specId">SPEC-??</span>
+            <span class="docs-meta-tag" id="specTag">TAG</span>
+            <span id="specDate">PUBLISHED: ----.--.--</span>
+            <span>Written by: <strong id="specAuthor" style="font-weight: 700;">---</strong></span>
+            <a href="/editor/edit" id="editSpecBtn" class="docs-author-link" style="display: none; margin-left: auto; text-decoration: underline;">[EDIT SPEC ↗]</a>
+        </div>
+    </section>
+
+    <!-- 目次 (TOC) -->
+    <nav class="docs-toc" id="docsToc" style="display: none;">
+        <h2 class="docs-toc-title">Table of Contents</h2>
+        <ol class="docs-toc-list" id="docsTocList"></ol>
+    </nav>
+
+    <!-- 記事本文コンテナ（元記事 DocsLayout と完全同一） -->
+    <article class="docs-article">
+        <!-- 概要（リード文） -->
+        <div id="leadContainer" style="display: none; margin-bottom: 3.5rem; border-bottom: 1px dashed var(--border-color); padding-bottom: 2rem;">
+            <p id="specDesc" style="font-size: 1.15rem; line-height: 2; color: var(--text-color); font-weight: 500; margin: 0;"></p>
+        </div>
+
+        <!-- 本文レンダラー -->
+        <div class="docs-prose" id="specBody">
+            <div style="padding: 4rem 0; text-align: center; color: var(--text-muted);">
+                仕様書データを読み込んでいます...
+            </div>
+        </div>
+
+        <!-- アカデミック・信頼性カード (E-E-A-T) -->
+        <div class="docs-academic-card reveal-up is-revealed" style="margin-top: 5rem;">
+            <!-- 著者情報 -->
+            <div class="docs-card-section">
+                <span class="docs-card-label">DOCUMENT AUTHOR</span>
+                <h3 class="docs-card-title" id="authorCardName">Author</h3>
+                <p style="font-size: 0.95rem; margin-top: 0.5rem; color: var(--text-muted); line-height: 1.6;" id="authorCardMeta">
+                    Contributor // SINT Researcher
+                </p>
+            </div>
+            <!-- 査読状態 -->
+            <div class="docs-card-section">
+                <span class="docs-card-label">METADATA</span>
+                <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-muted);">
+                    <strong style="color: var(--text-color);">Status:</strong> Registered on SINT Docs (Vercel Storage)<br>
+                    <strong style="color: var(--text-color);">License:</strong> CC BY-SA 2.0<br>
+                    <strong style="color: var(--text-color);">Publisher:</strong> Scratch Institute of Number Theory (SINT)
+                </p>
+            </div>
+        </div>
+
+        <!-- 記事ナビゲーション -->
+        <nav class="docs-nav" style="margin-top: 4rem;">
+            <a href="/docs">← BACK TO DOCS</a>
+        </nav>
+    </article>
+</Layout>
+
+<script>
+    import { marked } from 'marked';
+    import { fetchSpecBySlug, getToken } from '../../lib/api';
+
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('slug');
+
+    const specIdEl = document.getElementById('specId');
+    const specTagEl = document.getElementById('specTag');
+    const specDateEl = document.getElementById('specDate');
+    const specTitleEl = document.getElementById('specTitle');
+    const leadContainer = document.getElementById('leadContainer');
+    const specDescEl = document.getElementById('specDesc');
+    const specAuthorEl = document.getElementById('specAuthor');
+    const specBodyEl = document.getElementById('specBody');
+    const docsToc = document.getElementById('docsToc');
+    const docsTocList = document.getElementById('docsTocList');
+    const authorCardName = document.getElementById('authorCardName');
+    const authorCardMeta = document.getElementById('authorCardMeta');
+    const editSpecBtn = document.getElementById('editSpecBtn') as HTMLAnchorElement;
+
+    if (getToken() && slug && editSpecBtn) {
+        editSpecBtn.href = `/editor/edit?slug=${encodeURIComponent(slug)}`;
+        editSpecBtn.style.display = 'inline-block';
+    }
+
+    if (!slug) {
+        if (specTitleEl) specTitleEl.textContent = '仕様書が指定されていません';
+        if (specBodyEl) specBodyEl.innerHTML = '<p>有効な slug パラメータが必要です。</p>';
+    } else {
+        fetchSpecBySlug(slug).then(spec => {
+            if (!spec) {
+                if (specTitleEl) specTitleEl.textContent = '仕様書が見つかりませんでした (404)';
+                if (specBodyEl) specBodyEl.innerHTML = '<p>指定された仕様書は存在しないか、削除された可能性があります。</p>';
+                return;
+            }
+
+            document.title = `SINT - ${spec.title}`;
+            if (specIdEl) specIdEl.textContent = spec.specId;
+            if (specTagEl) specTagEl.textContent = spec.tag;
+            if (specDateEl) specDateEl.textContent = `PUBLISHED: ${spec.publishedDate}`;
+            if (specTitleEl) specTitleEl.textContent = spec.title;
+
+            if (spec.description && specDescEl && leadContainer) {
+                specDescEl.textContent = spec.description;
+                leadContainer.style.display = 'block';
+            }
+
+            if (specAuthorEl) specAuthorEl.textContent = spec.author || 'Collaborator';
+            if (authorCardName) authorCardName.textContent = spec.author || 'Collaborator';
+            if (authorCardMeta) authorCardMeta.textContent = `${spec.author || 'Collaborator'} // Registered Author on SINT Docs`;
+
+            if (specBodyEl) {
+                // Configure marked renderer for SINT typography
+                const renderer = new marked.Renderer();
+                const tocItems: { id: string; label: string }[] = [];
+                let headingCounter = 1;
+
+                renderer.heading = ({ text, depth }: { text: string; depth: number }) => {
+                    const headingId = `section-${headingCounter++}`;
+                    if (depth === 1 || depth === 2) {
+                        tocItems.push({ id: headingId, label: text });
+                        return `<h2 class="docs-section-heading" id="${headingId}" style="margin-top: 3.5rem; margin-bottom: 1.5rem;">${text}</h2>`;
+                    } else if (depth === 3) {
+                        return `<h3 class="docs-subsection-heading" id="${headingId}">${text}</h3>`;
+                    } else {
+                        return `<h4 class="docs-subsubsection-heading" id="${headingId}">${text}</h4>`;
+                    }
+                };
+
+                // Helper to preserve LaTeX formulas against marked syntax
+                const parseMarkdownWithMath = (rawText: string): string => {
+                    const mathBlocks: string[] = [];
+                    let text = rawText.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
+                        const placeholder = `%%SINT_MATH_BLOCK_${mathBlocks.length}%%`;
+                        mathBlocks.push(match);
+                        return placeholder;
+                    });
+                    text = text.replace(/\$([^\$\n]+?)\$/g, (match) => {
+                        const placeholder = `%%SINT_MATH_BLOCK_${mathBlocks.length}%%`;
+                        mathBlocks.push(match);
+                        return placeholder;
+                    });
+                    let html = marked.parse(text, { renderer, breaks: true, gfm: true }) as string;
+                    // Restore math blocks (safely escaping < and > to prevent browser HTML parser from breaking on inequalities like $x < y$)
+                    mathBlocks.forEach((math, idx) => {
+                        const placeholder = `%%SINT_MATH_BLOCK_${idx}%%`;
+                        const safeMath = math.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        html = html.replace(placeholder, safeMath);
+                    });
+                    return html;
+                };
+
+                const parsedHtml = parseMarkdownWithMath(spec.content || '');
+                specBodyEl.innerHTML = parsedHtml;
+
+                // Render Table of Contents
+                if (tocItems.length > 0 && docsToc && docsTocList) {
+                    docsTocList.innerHTML = '';
+                    tocItems.forEach(item => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<a href="#${item.id}">${item.label}</a>`;
+                        docsTocList.appendChild(li);
+                    });
+                    docsToc.style.display = 'block';
+                }
+
+                // Render KaTeX math with retry in case CDN scripts are still loading
+                const renderMathSafely = (element: HTMLElement) => {
+                    const render = () => {
+                        if ((window as any).renderMathInElement) {
+                            (window as any).renderMathInElement(element, {
+                                delimiters: [
+                                    { left: '$$', right: '$$', display: true },
+                                    { left: '$', right: '$', display: false },
+                                    { left: '\\(', right: '\\)', display: false },
+                                    { left: '\\[', right: '\\]', display: true }
+                                ],
+                                throwOnError: false
+                            });
+                            return true;
+                        }
+                        return false;
+                    };
+
+                    if (!render()) {
+                        let attempts = 0;
+                        const interval = setInterval(() => {
+                            attempts++;
+                            if (render() || attempts >= 30) {
+                                clearInterval(interval);
+                            }
+                        }, 100);
+                    }
+                };
+
+                renderMathSafely(specBodyEl);
+            }
+        });
+    }
+</script>

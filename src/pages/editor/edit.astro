@@ -1,0 +1,562 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import KatexLoader from '../../components/KatexLoader.astro';
+---
+
+<Layout title="SINT - SPEC EDITOR" description="SINT仕様書の作成・改訂エディタ">
+    <Fragment slot="head">
+        <KatexLoader />
+    </Fragment>
+    <div class="editor-container">
+        <header class="editor-header">
+            <div>
+                <a href="/editor" class="back-link">← DASHBOARD</a>
+                <h1 class="editor-title" id="pageHeading">NEW SPECIFICATION</h1>
+            </div>
+            <div class="header-buttons">
+                <button type="button" id="previewToggleBtn" class="btn-secondary">PREVIEW TOGGLE</button>
+                <button type="button" id="saveBtn" class="btn-primary">SAVE & PUBLISH ↗</button>
+            </div>
+        </header>
+
+        <form id="specForm" class="editor-layout">
+            <!-- メタデータ入力部 -->
+            <div class="meta-panel">
+                <h2 class="panel-title">METADATA</h2>
+
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label for="specId">SPEC ID *</label>
+                        <input type="text" id="specId" placeholder="SPEC-04" required />
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="tag">TAG / CATEGORY *</label>
+                        <input type="text" id="tag" placeholder="ALGORITHM" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="slug">SLUG (URL PATH) *</label>
+                    <input type="text" id="slug" placeholder="my-awesome-spec" required />
+                    <span class="help-text">URLになります: /docs/view?slug=<strong>my-awesome-spec</strong></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="title">TITLE *</label>
+                    <input type="text" id="title" placeholder="仕様書のタイトル" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="description">DESCRIPTION *</label>
+                    <textarea id="description" rows="3" placeholder="仕様書の概要・要約" required></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label for="author">AUTHOR</label>
+                        <input type="text" id="author" placeholder="執筆者名" value="Collaborator" />
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="publishedDate">PUBLISHED DATE</label>
+                        <input type="text" id="publishedDate" placeholder="2026.10.06" />
+                    </div>
+                </div>
+
+                <div id="statusMsg" class="status-msg" style="display: none;"></div>
+            </div>
+
+            <!-- 本文エディタ部 -->
+            <div class="content-panel">
+                <div class="editor-tabs">
+                    <button type="button" id="tabEdit" class="tab-btn active">MARKDOWN / HTML EDIT</button>
+                    <button type="button" id="tabPreview" class="tab-btn">PREVIEW</button>
+                </div>
+
+                <div id="editPane" class="pane">
+                    <textarea id="content" class="content-textarea" placeholder="## 01 / INTRODUCTION&#10;&#10;仕様書本文を入力してください。&#10;数式（$E=mc^2$ や $$...$$）やHTMLタグもそのまま使用できます。"></textarea>
+                </div>
+
+                <div id="previewPane" class="pane preview-pane" style="display: none;">
+                    <div id="previewRender" class="docs-prose"></div>
+                </div>
+            </div>
+        </form>
+    </div>
+</Layout>
+
+<script>
+    import { marked } from 'marked';
+    import { getToken, fetchSpecBySlug, saveSpec, verifySession } from '../../lib/api';
+
+    const token = getToken();
+    if (!token) {
+        window.location.href = '/editor/login';
+    } else {
+        // Verify token validity in background
+        verifySession().then(({ valid }) => {
+            if (!valid) {
+                alert('ログインセッションの有効期限が切れています。再ログインしてください。');
+                window.location.href = '/editor/login';
+            }
+        });
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const editSlug = urlParams.get('slug');
+    const isNew = !editSlug;
+
+    const pageHeading = document.getElementById('pageHeading');
+    const specIdInput = document.getElementById('specId') as HTMLInputElement;
+    const tagInput = document.getElementById('tag') as HTMLInputElement;
+    const slugInput = document.getElementById('slug') as HTMLInputElement;
+    const titleInput = document.getElementById('title') as HTMLInputElement;
+    const descInput = document.getElementById('description') as HTMLTextAreaElement;
+    const authorInput = document.getElementById('author') as HTMLInputElement;
+    const dateInput = document.getElementById('publishedDate') as HTMLInputElement;
+    const contentInput = document.getElementById('content') as HTMLTextAreaElement;
+    const saveBtn = document.getElementById('saveBtn') as HTMLButtonElement;
+    const statusMsg = document.getElementById('statusMsg') as HTMLDivElement;
+
+    const tabEdit = document.getElementById('tabEdit');
+    const tabPreview = document.getElementById('tabPreview');
+    const editPane = document.getElementById('editPane');
+    const previewPane = document.getElementById('previewPane');
+    const previewRender = document.getElementById('previewRender');
+
+    // Default published date
+    if (dateInput && !dateInput.value) {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        dateInput.value = `${y}.${m}.${day}`;
+    }
+
+    if (!isNew && editSlug) {
+        if (pageHeading) pageHeading.textContent = `REVISE SPEC: ${editSlug}`;
+        if (slugInput) {
+            slugInput.value = editSlug;
+            slugInput.disabled = true;
+        }
+
+        // Fetch existing spec
+        fetchSpecBySlug(editSlug).then(spec => {
+            if (!spec) {
+                alert('仕様書の取得に失敗しました');
+                return;
+            }
+            specIdInput.value = spec.specId || '';
+            tagInput.value = spec.tag || '';
+            titleInput.value = spec.title || '';
+            descInput.value = spec.description || '';
+            authorInput.value = spec.author || '';
+            dateInput.value = spec.publishedDate || '';
+            contentInput.value = spec.content || '';
+        });
+    }
+
+    // Tab switching & render
+    const previewToggleBtn = document.getElementById('previewToggleBtn');
+
+    function isPreviewActive(): boolean {
+        return tabPreview?.classList.contains('active') || false;
+    }
+
+    function showTab(tab: 'edit' | 'preview') {
+        if (tab === 'edit') {
+            tabEdit?.classList.add('active');
+            tabPreview?.classList.remove('active');
+            if (editPane) editPane.style.display = 'block';
+            if (previewPane) previewPane.style.display = 'none';
+        } else {
+            tabEdit?.classList.remove('active');
+            tabPreview?.classList.add('active');
+            if (editPane) editPane.style.display = 'none';
+            if (previewPane) previewPane.style.display = 'block';
+            renderPreview();
+        }
+    }
+
+    tabEdit?.addEventListener('click', () => showTab('edit'));
+    tabPreview?.addEventListener('click', () => showTab('preview'));
+    previewToggleBtn?.addEventListener('click', () => {
+        showTab(isPreviewActive() ? 'edit' : 'preview');
+    });
+
+    // Helper to preserve LaTeX formulas against marked syntax (e.g. underscores converted to <em>)
+    function parseMarkdownWithMath(rawText: string, customRenderer?: any): string {
+        const mathBlocks: string[] = [];
+
+        // 1. Protect block math $$ ... $$
+        let text = rawText.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
+            const placeholder = `%%SINT_MATH_BLOCK_${mathBlocks.length}%%`;
+            mathBlocks.push(match);
+            return placeholder;
+        });
+
+        // 2. Protect inline math $ ... $
+        text = text.replace(/\$([^\$\n]+?)\$/g, (match) => {
+            const placeholder = `%%SINT_MATH_BLOCK_${mathBlocks.length}%%`;
+            mathBlocks.push(match);
+            return placeholder;
+        });
+
+        // 3. Parse markdown
+        const options: any = { breaks: true, gfm: true };
+        if (customRenderer) options.renderer = customRenderer;
+        let html = marked.parse(text, options) as string;
+
+        // 4. Restore math blocks (safely escaping < and > to prevent browser HTML parser from breaking on inequalities like $x < y$)
+        mathBlocks.forEach((math, idx) => {
+            const placeholder = `%%SINT_MATH_BLOCK_${idx}%%`;
+            const safeMath = math.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            html = html.replace(placeholder, safeMath);
+        });
+
+        return html;
+    }
+
+    // Helper to safely render KaTeX with retry in case scripts are still loading
+    function renderMathSafely(element: HTMLElement) {
+        if (!element) return;
+        const render = () => {
+            if ((window as any).renderMathInElement) {
+                (window as any).renderMathInElement(element, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false },
+                        { left: '\\(', right: '\\)', display: false },
+                        { left: '\\[', right: '\\]', display: true }
+                    ],
+                    throwOnError: false
+                });
+                return true;
+            }
+            return false;
+        };
+
+        if (!render()) {
+            let attempts = 0;
+            const interval = setInterval(() => {
+                attempts++;
+                if (render() || attempts >= 30) {
+                    clearInterval(interval);
+                }
+            }, 100);
+        }
+    }
+
+    function renderPreview() {
+        if (!previewRender) return;
+        const raw = contentInput.value;
+        try {
+            previewRender.innerHTML = parseMarkdownWithMath(raw);
+        } catch {
+            previewRender.innerHTML = raw;
+        }
+
+        renderMathSafely(previewRender);
+    }
+
+    // Save handling
+    saveBtn?.addEventListener('click', async () => {
+        statusMsg.style.display = 'none';
+
+        const slug = !isNew && editSlug
+            ? editSlug
+            : slugInput.value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+        const specId = specIdInput.value.trim();
+        const tag = tagInput.value.trim();
+        const title = titleInput.value.trim();
+        const description = descInput.value.trim();
+        const author = authorInput.value.trim();
+        const publishedDate = dateInput.value.trim();
+        const content = contentInput.value;
+
+        if (!slug || !specId || !title || !tag) {
+            alert('SPEC ID、タグ、SLUG、タイトルは必須です');
+            return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'SAVING...';
+
+        const res = await saveSpec({
+            slug,
+            specId,
+            tag,
+            title,
+            description,
+            author,
+            publishedDate,
+            content,
+        }, isNew);
+
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'SAVE & PUBLISH ↗';
+
+        if (res.success) {
+            statusMsg.className = 'status-msg success';
+            statusMsg.innerHTML = `保存完了！ <a href="/docs/view?slug=${slug}" target="_blank">仕様書を見る ↗</a>`;
+            statusMsg.style.display = 'block';
+            if (isNew) {
+                setTimeout(() => {
+                    window.location.href = `/editor/edit?slug=${slug}`;
+                }, 1200);
+            }
+        } else {
+            statusMsg.className = 'status-msg error';
+            const isAuthError = res.error?.includes('ログイン') || res.error?.includes('401') || res.error?.includes('Unauthorized');
+            statusMsg.innerHTML = isAuthError
+                ? `<strong>保存に失敗しました（認証エラー）:</strong> セッションが切れている可能性があります。<br>入力中の文章は保持されています。別タブで <a href="/editor/login" target="_blank" style="text-decoration: underline; color: inherit; font-weight: bold;">再ログイン ↗</a> してからもう一度「SAVE」を押してください。`
+                : `保存に失敗しました: ${res.error || '不明なエラー'}`;
+            statusMsg.style.display = 'block';
+        }
+    });
+</script>
+
+<style>
+.editor-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 6rem;
+}
+
+.back-link {
+    font-family: var(--font-en);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+
+.back-link:hover {
+    color: var(--text-color);
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.editor-title {
+    font-family: var(--font-en);
+    font-size: 2rem;
+    font-weight: 900;
+    color: #111827;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-primary {
+    background: #111827;
+    color: #ffffff;
+    font-family: var(--font-en);
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    padding: 0.75rem 1.4rem;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+}
+
+.btn-secondary {
+    background: #ffffff;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    font-family: var(--font-en);
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.75rem 1.4rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.btn-secondary:hover {
+    border-color: #111827;
+}
+
+.editor-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+@media (min-width: 992px) {
+    .editor-layout {
+        grid-template-columns: 380px minmax(0, 1fr);
+    }
+}
+
+.meta-panel {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.panel-title {
+    font-family: var(--font-en);
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0.75rem;
+    color: #111827;
+    margin: 0;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+.flex-1 {
+    flex: 1;
+    min-width: 0; /* Prevents overflow in flex child */
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    width: 100%;
+    min-width: 0;
+}
+
+.form-group label {
+    font-family: var(--font-en);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #4b5563;
+}
+
+.form-group input, .form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    color: #111827;
+    padding: 0.75rem 0.85rem;
+    font-size: 0.92rem;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.form-group input:focus, .form-group textarea:focus {
+    border-color: #111827;
+    box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.1);
+}
+
+.form-group input:disabled {
+    background: #f3f4f6;
+    color: #6b7280;
+    cursor: not-allowed;
+}
+
+.help-text {
+    font-size: 0.72rem;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+.content-panel {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.editor-tabs {
+    display: flex;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fafafa;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    font-family: var(--font-en);
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 0.9rem 1.5rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s;
+}
+
+.tab-btn.active {
+    color: #111827;
+    background: #ffffff;
+    border-bottom-color: #111827;
+}
+
+.content-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 560px;
+    background: #ffffff;
+    border: none;
+    color: #111827;
+    padding: 1.5rem;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    outline: none;
+    resize: vertical;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+.preview-pane {
+    padding: 2.5rem;
+    min-height: 560px;
+    background: #ffffff;
+}
+
+.status-msg {
+    padding: 0.85rem 1rem;
+    font-size: 0.88rem;
+    border-radius: 4px;
+}
+
+.status-msg.success {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.status-msg.error {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+</style>

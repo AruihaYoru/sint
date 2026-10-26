@@ -1,7 +1,7 @@
 export const GET = async () => {
   const pages = import.meta.glob('/src/pages/**/*.astro', { eager: true });
   const pagePaths = Object.keys(pages)
-    .filter(path => !path.includes('/404.astro'))
+    .filter(path => !path.includes('/404.astro') && !path.includes('/editor/') && !path.includes('/mofumofu.astro'))
     .map(path => {
       let route = path.replace('/src/pages', '').replace('.astro', '');
       if (route.endsWith('/index')) {

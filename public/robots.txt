@@ -51,5 +51,6 @@ Disallow: /
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /editor/
 
 Sitemap: https://sint-org.com/sitemap.xml

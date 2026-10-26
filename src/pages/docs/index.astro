@@ -32,13 +32,19 @@ const articles = Object.entries(posts)
     </section>
 
     <!-- 記事一覧セクション -->
+    <!-- 記事一覧セクション -->
     <section class="content-section">
-        <span class="section-num reveal-up">01 / ARCHIVES</span>
-        <h2 class="section-text reveal-up" style="margin-bottom: 2rem;">公開仕様書・研究資料</h2>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+            <div>
+                <span class="section-num reveal-up">01 / ARCHIVES</span>
+                <h2 class="section-text reveal-up">公開仕様書・研究資料</h2>
+            </div>
+            <a href="/editor" class="editor-portal-link reveal-up">SPEC EDITOR ↗</a>
+        </div>
 
-        <div class="docs-list">
+        <div class="docs-list" id="docsList">
             {articles.map(article => (
-                <div class="docs-item reveal-up">
+                <div class="docs-item reveal-up" data-spec-id={article.specId} data-date={article.publishedDate}>
                     <div class="docs-meta">
                         <span class="docs-num">{article.specId}</span>
                         <span class="docs-tag">{article.tag}</span>
@@ -60,14 +66,109 @@ const articles = Object.entries(posts)
             ))}
         </div>
     </section>
+
+    <script>
+        import { fetchSpecs } from '../../lib/api';
+
+        const docsList = document.getElementById('docsList');
+
+        async function mergeDynamicSpecs() {
+            if (!docsList) return;
+            try {
+                const dynamicSpecs = await fetchSpecs();
+                console.log('[SINT Docs] Fetched dynamic specs:', dynamicSpecs);
+                if (!dynamicSpecs || dynamicSpecs.length === 0) return;
+
+                // Collect existing URLs to avoid duplicate rendering
+                const existingUrls = new Set<string>();
+                document.querySelectorAll('.docs-title a').forEach(a => {
+                    const href = a.getAttribute('href');
+                    if (href) existingUrls.add(href.replace(/\/$/, ''));
+                });
+
+                let addedNew = false;
+                for (const spec of dynamicSpecs) {
+                    const viewUrl = `/docs/view?slug=${encodeURIComponent(spec.slug)}`;
+                    if (existingUrls.has(viewUrl)) continue;
+
+                    const item = document.createElement('div');
+                    item.className = 'docs-item reveal-up is-revealed';
+                    item.style.opacity = '1';
+                    item.style.transform = 'none';
+                    item.setAttribute('data-spec-id', spec.specId);
+                    item.setAttribute('data-date', spec.publishedDate);
+
+                    item.innerHTML = `
+                        <div class="docs-meta">
+                            <span class="docs-num">${spec.specId}</span>
+                            <span class="docs-tag">${spec.tag}</span>
+                        </div>
+                        <div class="docs-content">
+                            <h3 class="docs-title">
+                                <a href="${viewUrl}">${spec.title}</a>
+                            </h3>
+                            <p class="docs-desc">
+                                ${spec.description || ''}
+                            </p>
+                            <div class="docs-footer-meta">
+                                <span class="docs-date">PUBLISHED: ${spec.publishedDate}</span>
+                                <span class="docs-date">Written by: ${spec.author || 'Collaborator'}</span>
+                                <a href="${viewUrl}" class="docs-readmore">READ SPECIFICATION ↗</a>
+                            </div>
+                        </div>
+                    `;
+
+                    docsList.appendChild(item);
+                    addedNew = true;
+                    console.log(`[SINT Docs] Added dynamic spec: ${spec.title} (${spec.slug})`);
+                }
+
+                // Sort all items in docsList by publishedDate descending (newest first)
+                const allItems = Array.from(docsList.querySelectorAll<HTMLElement>('.docs-item'));
+                allItems.sort((a, b) => {
+                    const dateA = new Date(a.getAttribute('data-date')?.replace(/\./g, '-') || 0).getTime();
+                    const dateB = new Date(b.getAttribute('data-date')?.replace(/\./g, '-') || 0).getTime();
+                    return dateB - dateA;
+                });
+
+                // Re-append in sorted order
+                allItems.forEach(item => docsList.appendChild(item));
+
+            } catch (err) {
+                console.warn('[SINT Docs] Dynamic specs could not be loaded:', err);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', mergeDynamicSpecs);
+        } else {
+            mergeDynamicSpecs();
+        }
+    </script>
 </Layout>
 
-<style>
+<style is:global>
 .docs-list {
     display: flex;
     flex-direction: column;
     width: 100%;
     margin-top: 2rem;
+}
+
+.editor-portal-link {
+    font-family: var(--font-en);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-decoration: none;
+    border: 1px solid var(--grid-color);
+    padding: 0.4rem 0.8rem;
+    transition: all 0.3s;
+}
+
+.editor-portal-link:hover {
+    color: var(--text-color);
+    border-color: var(--border-color);
 }
 
 .docs-item {
