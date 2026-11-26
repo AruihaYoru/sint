@@ -8,6 +8,8 @@ export interface SpecPost {
   tag: string;
   publishedDate: string;
   author: string;
+  visibility?: 'public' | 'members';
+  isLocked?: boolean;
   faqs?: { q: string; a: string }[];
   toc?: { id: string; label: string }[];
   content: string;
@@ -88,7 +90,13 @@ export async function verifySession(): Promise<{ valid: boolean; user?: { userna
 
 export async function fetchSpecsResult(): Promise<{ success: boolean; specs: SpecPost[]; error?: string }> {
   try {
-    const res = await fetch(`${getApiBaseUrl()}/api/specs`);
+    const token = getToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${getApiBaseUrl()}/api/specs`, { headers });
     if (!res.ok) {
       return { success: false, specs: [], error: `HTTP ${res.status}: ${res.statusText}` };
     }
@@ -107,7 +115,13 @@ export async function fetchSpecs(): Promise<SpecPost[]> {
 
 export async function fetchSpecBySlug(slug: string): Promise<SpecPost | null> {
   try {
-    const res = await fetch(`${getApiBaseUrl()}/api/specs/${encodeURIComponent(slug)}`);
+    const token = getToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${getApiBaseUrl()}/api/specs/${encodeURIComponent(slug)}`, { headers });
     if (!res.ok) return null;
     const data = await res.json();
     return data.spec || null;

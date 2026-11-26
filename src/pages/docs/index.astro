@@ -48,6 +48,9 @@ const articles = Object.entries(posts)
                     <div class="docs-meta">
                         <span class="docs-num">{article.specId}</span>
                         <span class="docs-tag">{article.tag}</span>
+                        {(article as any).visibility === 'members' && (
+                            <span class="docs-lock-badge">MEMBERS ONLY</span>
+                        )}
                     </div>
                     <div class="docs-content">
                         <h3 class="docs-title">
@@ -98,10 +101,17 @@ const articles = Object.entries(posts)
                     item.setAttribute('data-spec-id', spec.specId);
                     item.setAttribute('data-date', spec.publishedDate);
 
+                    const isMembers = spec.visibility === 'members';
+                    const lockBadge = isMembers
+                        ? `<span class="docs-lock-badge">MEMBERS ONLY</span>`
+                        : '';
+                    const readMoreText = isMembers ? 'VIEW MEMBER SPEC ↗' : 'READ SPECIFICATION ↗';
+
                     item.innerHTML = `
                         <div class="docs-meta">
                             <span class="docs-num">${spec.specId}</span>
                             <span class="docs-tag">${spec.tag}</span>
+                            ${lockBadge}
                         </div>
                         <div class="docs-content">
                             <h3 class="docs-title">
@@ -113,7 +123,7 @@ const articles = Object.entries(posts)
                             <div class="docs-footer-meta">
                                 <span class="docs-date">PUBLISHED: ${spec.publishedDate}</span>
                                 <span class="docs-date">Written by: ${spec.author || 'Collaborator'}</span>
-                                <a href="${viewUrl}" class="docs-readmore">READ SPECIFICATION ↗</a>
+                                <a href="${viewUrl}" class="docs-readmore">${readMoreText}</a>
                             </div>
                         </div>
                     `;
@@ -273,5 +283,18 @@ const articles = Object.entries(posts)
 
 .docs-readmore:hover {
     opacity: 0.7;
+}
+
+.docs-lock-badge {
+    display: inline-block;
+    font-family: var(--font-en);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border: 1px solid var(--text-color);
+    background: transparent;
+    color: var(--text-color);
+    align-self: flex-start;
 }
 </style>

@@ -1,0 +1,306 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout 
+    title="SINT - Department of Jokes (DoJ)" 
+    description="Scratch数論研究会 ジョーク部門 (Department of Jokes / DoJ) — Q1査読者2号による煉獄を生き延びるため、最高水準の数理科学をインターネット・ミームと日常の些細な謎へ投入する特別研究部門。"
+>
+    <!-- ヒーローセクション -->
+    <header class="doj-hero">
+        <div class="hero-label-row">
+            <span class="hero-label">DIVISION 02 // SPECIAL RESEARCH SECTOR</span>
+            <span class="hero-label-date">EST. 2026</span>
+        </div>
+        <h1 class="doj-title">
+            <span class="doj-title-en">DEPARTMENT OF JOKES</span>
+            <span class="doj-title-ja">ジョーク部門 (DoJ)</span>
+        </h1>
+        <div class="hero-rule"></div>
+    </header>
+
+    <!-- 設立趣意書セクション -->
+    <section class="content-section">
+        <span class="section-num">01 / CHARTER</span>
+        <h2 class="section-text" style="margin-bottom: 3.5rem;">設立趣意書</h2>
+
+        <div class="charter-grid">
+            <!-- 和文 -->
+            <div class="charter-col">
+                <div class="charter-lang">JA / 原文</div>
+                <div class="charter-text-block">
+                    <p class="charter-lead">
+                        本部門は、当会の主軸であるQ1ジャーナル等への査読プロセス長期化（いわゆる<strong>「査読者2号による煉獄」</strong>）に伴う学術的飢餓感を解消し、一般層への数理科学のアウトリーチを促進するために設立された特別研究部門である。
+                    </p>
+                    <p class="charter-body">
+                        最高水準の数論・位相幾何学・確率過程の知見を、日常の些細なライフハックやインターネット・ミームの検証へと惜しみなく投入することで、迅速かつ確実な研究成果（成果物）の創出を目的とする。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 英文 -->
+            <div class="charter-col en-col">
+                <div class="charter-lang">EN / OFFICIAL DISPATCH</div>
+                <div class="charter-text-block">
+                    <p class="charter-lead en-font">
+                        Established to mitigate academic withdrawal symptoms caused by prolonged Q1 peer-review purgatory, the Department of Jokes applies rigorous number-theoretic, topological, and stochastic frameworks to trivial everyday phenomena and internet folklore.
+                    </p>
+                    <p class="charter-body en-font">
+                        Our mission is to deliver rapid, empirically grounded, and scientifically rigorous nonsense to the broader public while our primary manuscripts await Reviewer 2's mercy.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- 理念と運用 -->
+    <section class="content-section">
+        <span class="section-num">02 / MISSION</span>
+        <h2 class="section-text" style="margin-bottom: 3rem;">運用の基本方針</h2>
+
+        <div class="mission-grid">
+            <div class="mission-item">
+                <span class="mission-num">01</span>
+                <h3 class="mission-title">学術的飢餓感の即時解消</h3>
+                <p class="mission-desc">
+                    査読返信を待つ数ヶ月から数年の空白期間において、研究者の知的出力を途絶えさせないための高エネルギー放流弁として機能する。
+                </p>
+            </div>
+            <div class="mission-item">
+                <span class="mission-num">02</span>
+                <h3 class="mission-title">過剰なまでの数学的厳密性</h3>
+                <p class="mission-desc">
+                    対象がいかに些細・無価値な現象であっても、投入される証明論、測度論、微分幾何学の論理展開には一切の妥協を許さない。
+                </p>
+            </div>
+            <div class="mission-item">
+                <span class="mission-num">03</span>
+                <h3 class="mission-title">一般層へのアウトリーチ</h3>
+                <p class="mission-desc">
+                    難解な数理科学の道具立てが日常のユーモアと交錯する瞬間を通じて、数学の真の自由さと美しさを広く社会へ提示する。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- 案内・ナビゲーション -->
+    <section class="content-section">
+        <span class="section-num">03 / ARCHIVES</span>
+        <div class="portal-box">
+            <div class="portal-info">
+                <h3 class="portal-title">正規学術仕様書・論文 (DOCS)</h3>
+                <p class="portal-desc">
+                    当会の主軸である数論、力学系、暗号理論等の学術資料・仕様書は DOCS にて公開されています。
+                </p>
+            </div>
+            <a href="/docs" class="portal-btn">
+                <span>VIEW DOCS</span>
+                <span>↗</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- 応募リンク -->
+    <section class="apply-action-section">
+        <a href="/apply" class="apply-button">
+            <span class="apply-button-text">SINTに応募する (TESTAMENT)</span>
+        </a>
+    </section>
+</Layout>
+
+<style>
+    /* 白背景・黒文字（クリーン＆ストイックなタイポグラフィ） */
+    .doj-hero {
+        padding: 12rem 8% 5rem;
+        position: relative;
+    }
+
+    .hero-label-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        font-family: var(--font-en);
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        color: var(--text-muted);
+    }
+
+    .doj-title {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .doj-title-en {
+        font-family: var(--font-en);
+        font-size: clamp(2.4rem, 6.5vw, 5.5rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        color: var(--text-color);
+    }
+
+    .doj-title-ja {
+        font-size: clamp(1.2rem, 2.5vw, 2rem);
+        font-weight: 900;
+        letter-spacing: -0.01em;
+        color: var(--text-muted);
+    }
+
+    .hero-rule {
+        width: 100%;
+        height: 2px;
+        background-color: var(--text-color);
+        margin-top: 3.5rem;
+    }
+
+    /* 設立趣意書 */
+    .charter-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+    }
+
+    .charter-col {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .charter-lang {
+        font-family: var(--font-en);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        color: var(--text-muted);
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 2rem;
+    }
+
+    .charter-lead {
+        font-size: 1.15rem;
+        line-height: 2;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--text-color);
+    }
+
+    .charter-lead strong {
+        text-decoration: underline;
+        text-underline-offset: 4px;
+    }
+
+    .charter-body {
+        font-size: 1rem;
+        line-height: 1.9;
+        color: var(--text-muted);
+    }
+
+    .en-font {
+        font-family: var(--font-en);
+        line-height: 1.75;
+    }
+
+    /* 運用方針 */
+    .mission-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 3rem;
+    }
+
+    .mission-item {
+        border-left: 2px solid var(--text-color);
+        padding-left: 1.5rem;
+    }
+
+    .mission-num {
+        display: block;
+        font-family: var(--font-en);
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 1rem;
+        color: var(--text-muted);
+    }
+
+    .mission-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text-color);
+    }
+
+    .mission-desc {
+        font-size: 0.95rem;
+        line-height: 1.8;
+        color: var(--text-muted);
+    }
+
+    /* ポータル案内 */
+    .portal-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 3rem 0;
+        border-top: 1px solid var(--text-color);
+        border-bottom: 1px solid var(--text-color);
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .portal-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+    }
+
+    .portal-desc {
+        font-size: 0.95rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    .portal-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.8rem;
+        font-family: var(--font-en);
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-color);
+        text-decoration: none;
+        border: 2px solid var(--text-color);
+        padding: 0.8rem 1.8rem;
+        transition: all 0.2s ease;
+    }
+
+    .portal-btn:hover {
+        background-color: var(--text-color);
+        color: var(--bg-color);
+    }
+
+    @media (max-width: 860px) {
+        .doj-hero {
+            padding: 8rem 8% 3rem;
+        }
+        .charter-grid {
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+        }
+        .mission-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        .portal-box {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>

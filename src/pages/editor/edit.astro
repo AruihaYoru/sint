@@ -63,6 +63,26 @@ import KatexLoader from '../../components/KatexLoader.astro';
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label>VISIBILITY (公開範囲) *</label>
+                    <div class="visibility-options">
+                        <label class="visibility-card">
+                            <input type="radio" name="visibility" value="public" id="visPublic" checked />
+                            <div class="visibility-card-inner">
+                                <span class="visibility-title">PUBLIC (全体公開)</span>
+                                <span class="visibility-sub">誰でも全文閲覧可能（デフォルト）</span>
+                            </div>
+                        </label>
+                        <label class="visibility-card">
+                            <input type="radio" name="visibility" value="members" id="visMembers" />
+                            <div class="visibility-card-inner">
+                                <span class="visibility-title">MEMBERS ONLY (メンバー限定)</span>
+                                <span class="visibility-sub">タイトル等は公開、本文データはログイン済みメンバーに限定</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 <div id="statusMsg" class="status-msg" style="display: none;"></div>
             </div>
 
@@ -127,6 +147,8 @@ import KatexLoader from '../../components/KatexLoader.astro';
     const authorInput = document.getElementById('author') as HTMLInputElement;
     const dateInput = document.getElementById('publishedDate') as HTMLInputElement;
     const contentInput = document.getElementById('content') as HTMLTextAreaElement;
+    const visPublic = document.getElementById('visPublic') as HTMLInputElement;
+    const visMembers = document.getElementById('visMembers') as HTMLInputElement;
     const saveBtn = document.getElementById('saveBtn') as HTMLButtonElement;
     const statusMsg = document.getElementById('statusMsg') as HTMLDivElement;
 
@@ -165,6 +187,11 @@ import KatexLoader from '../../components/KatexLoader.astro';
             authorInput.value = spec.author || '';
             dateInput.value = spec.publishedDate || '';
             contentInput.value = spec.content || '';
+            if (spec.visibility === 'members') {
+                if (visMembers) visMembers.checked = true;
+            } else {
+                if (visPublic) visPublic.checked = true;
+            }
         });
     }
 
@@ -284,6 +311,7 @@ import KatexLoader from '../../components/KatexLoader.astro';
         const description = descInput.value.trim();
         const author = authorInput.value.trim();
         const publishedDate = dateInput.value.trim();
+        const visibility = visMembers?.checked ? 'members' : 'public';
         const content = contentInput.value;
 
         if (!slug || !specId || !title || !tag) {
@@ -302,6 +330,7 @@ import KatexLoader from '../../components/KatexLoader.astro';
             description,
             author,
             publishedDate,
+            visibility,
             content,
         }, isNew);
 
@@ -491,6 +520,62 @@ import KatexLoader from '../../components/KatexLoader.astro';
     background: #f3f4f6;
     color: #6b7280;
     cursor: not-allowed;
+}
+
+.visibility-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-top: 0.2rem;
+}
+
+.visibility-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid #d1d5db;
+    background: #f9fafb;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.visibility-card:hover {
+    border-color: #9ca3af;
+    background: #ffffff;
+}
+
+.visibility-card:has(input:checked) {
+    border-color: #111827;
+    background: #ffffff;
+    box-shadow: 0 0 0 1px #111827;
+}
+
+.visibility-card input[type="radio"] {
+    width: auto;
+    margin-top: 0.2rem;
+    cursor: pointer;
+}
+
+.visibility-card-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.visibility-title {
+    font-family: var(--font-en);
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #111827;
+}
+
+.visibility-sub {
+    font-size: 0.75rem;
+    color: #6b7280;
+    line-height: 1.35;
 }
 
 .help-text {

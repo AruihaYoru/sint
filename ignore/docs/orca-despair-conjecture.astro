@@ -1,0 +1,446 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+
+export const title = "【力学系・数論】シャチの絶望定理 — 離散海洋格子における保存量散逸と永久停止の証明";
+export const description = "二次元格子海、古代テープ、原点への偏執。自然数nと整数mの初期配置から始まるシャチの遊泳は、リアプノフ単調量Ψとパリティ幾何学の連鎖により、有限ステップ以内の永久停止が必然づけられる。";
+export const specId = "SPEC-05";
+export const tag = "DISCRETE DYNAMICS";
+export const publishedDate = "2026.11.14";
+export const author = "aruihayoru";
+
+const faqs = [
+    {
+        q: "「シャチの絶望予想（定理）」とはどのような問題ですか？",
+        a: "二次元格子海において、古代テープ（GCDが奇数）と自己テープの操作を繰り返すシャチが、任意の初期値 (n, n+m)、初期テープ長 L = n² から出発したとき、有限ステップ以内に必ずテープ不足による永久停止（Halting）を迎えることを証明した離散力学系の定理です。"
+    },
+    {
+        q: "泥臭い場合分けを排した「綺麗な証明」の核心は何ですか？",
+        a: "格子上にある全テープの潜在的総量を表すリアプノフ関数 Ψ = L + Σ d_P の単調非増加性と、空タイル（両座標が偶数）から1歩進むと必ず古代テープ（GCDが奇数）を踏むという「パリティ幾何学補題」を組み合わせる点です。"
+    },
+    {
+        q: "停止ステップ数のオーダーはどうなりますか？",
+        a: "単調量 Ψ の初期値が Ψ₀ = n² であり、L ≥ 1 である限り高々2ステップごとに Ψ が 1 以上厳密に減少するため、シャチは O(n²) ステップ以内に必ず L = 0 に到達し、最終的に永久停止へ追い込まれます。"
+    }
+];
+
+const toc = [
+    { id: "world-setting", label: "世界設定およびシステム定義" },
+    { id: "initial-setup", label: "初期配置" },
+    { id: "orca-algorithm", label: "シャチの行動アルゴリズム" },
+    { id: "main-theorem", label: "シャチの絶望定理（主定理）" },
+    { id: "mathematical-framework", label: "保存量とパリティ幾何学の基礎補題" },
+    { id: "rigorous-proof", label: "主定理の完全な証明" },
+    { id: "elementary-cases", label: "軌道追跡と具象例" },
+    { id: "open-questions", label: "発展的課題と未解決の論点" }
+];
+---
+
+<DocsLayout
+    title={title}
+    description={description}
+    specId={specId}
+    tag={tag}
+    publishedDate={publishedDate}
+    author={author}
+    faqs={faqs}
+    toc={toc}
+>
+
+    <!-- ==================== 導入 ==================== -->
+    <p>
+        二次元無限格子海、数論的に敷き詰められた古代テープ、そして原点への偏執。
+        局所的な算術演算と幾何学的遷移を内包する決定論的オートマトンにおいて、シャチが辿る運命を追究します。
+        本稿では、リアプノフ単調量 $\Psi$ の構成とパリティ保存則を架橋することで、泥臭い個別軌道の追跡を排した普遍的・演繹的な「永久停止の必然性（絶望定理）」を証明します。
+    </p>
+    <span style="height:2rem"></span>
+
+    <!-- ==================== 世界設定 ==================== -->
+    <section class="docs-section" id="world-setting">
+        <span class="docs-section-label reveal-up">01 / WORLD SETTING</span>
+        <h2 class="docs-section-heading reveal-up">世界設定およびシステム定義</h2>
+        <div class="docs-prose reveal-up" is:raw>
+            <p>
+                離散海洋空間を二次元整数格子 $\mathbb{Z}^2$ として定義します。<br>
+                各格子点 $(x, y) \in \mathbb{Z}^2$ には観測ブイが1基ずつ固定配置されており、その状態空間を $\Sigma = \{\text{None}, \text{Mine}, \text{Ancient}\}$ と定めます。
+            </p>
+
+            <table style="width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem; border-top: 2px solid var(--text-color); border-bottom: 2px solid var(--text-color);">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
+                        <th style="padding: 0.75rem;">状態 $B(x, y)$</th>
+                        <th style="padding: 0.75rem;">名称</th>
+                        <th style="padding: 0.75rem;">力学系における役割</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid var(--grid-color);">
+                        <td style="padding: 0.75rem;"><code>None</code></td>
+                        <td style="padding: 0.75rem;"><strong>空（None）</strong></td>
+                        <td style="padding: 0.75rem;">未補修ブイ。通過時にチェビシェフ距離分のテープ消費を要求する。</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--grid-color);">
+                        <td style="padding: 0.75rem;"><code>Mine</code></td>
+                        <td style="padding: 0.75rem;"><strong>自己テープ（Mine）</strong></td>
+                        <td style="padding: 0.75rem;">シャチが過去に敷設したテープ。回収時に消費分が完全に払い戻される。</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.75rem;"><code>Ancient</code></td>
+                        <td style="padding: 0.75rem;"><strong>古代テープ（Ancient）</strong></td>
+                        <td style="padding: 0.75rem;">初期宇宙から存在する散逸源。剥離時にテープ長を強制的に半減させる。</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 class="docs-subsection-heading">エージェント：シャチ（Orca）の状態変数</h3>
+            <p>
+                海を遊泳する単一のエージェント「シャチ」の離散時刻 $t \in \mathbb{N}_0$ における内部状態は、以下の3つ組 $\Omega_t$ によって完全に記述されます：
+            </p>
+            $$\Omega_t = \left( \mathbf{x}_t, D_t, L_t \right) \in \mathbb{Z}^2 \times \{\mathbf{e}_N, \mathbf{e}_E, \mathbf{e}_S, \mathbf{e}_W\} \times \mathbb{N}_0$$
+
+            <ul>
+                <li><strong>現在座標：</strong> $\mathbf{x}_t = (x_t, y_t) \in \mathbb{Z}^2$</li>
+                <li><strong>進行ベクトル：</strong> $D_t \in \{(0, 1), (1, 0), (0, -1), (-1, 0)\}$</li>
+                <li><strong>ダクトテープ残長：</strong> $L_t \in \mathbb{N}_0$ （非負整数）</li>
+            </ul>
+        </div>
+    </section>
+
+    <hr class="docs-divider">
+
+    <!-- ==================== 初期配置 ==================== -->
+    <section class="docs-section" id="initial-setup">
+        <span class="docs-section-label reveal-up">02 / INITIAL CONFIGURATION</span>
+        <h2 class="docs-section-heading reveal-up">初期配置</h2>
+        <div class="docs-prose reveal-up" is:raw>
+            <p>
+                任意の自然数 $n \ge 1$ および整数 $m \in \mathbb{Z}$ を初期パラメータとします。
+            </p>
+            <ul>
+                <li><strong>シャチの初期座標：</strong> $\mathbf{x}_0 = (n, n+m)$</li>
+                <li><strong>初期進行方向：</strong> $D_0 = \mathbf{e}_N = (0, 1)$ （北向き）</li>
+                <li><strong>初期テープ長：</strong> $L_0 = n^2$</li>
+            </ul>
+
+            <h3 class="docs-subsection-heading">海洋ブイの初期場 $B_0$</h3>
+            <p>
+                原点 $(0, 0)$ を除くすべての格子点において、座標の最大公約数 $\gcd(|x|, |y|)$ の偶奇パリティに応じて古代テープが敷設されます（原点は常に $\text{None}$）：
+            </p>
+
+            $$B_0(0, 0) = \text{None}$$
+            $$\forall (x, y) \neq (0, 0), \quad B_0(x, y) = \begin{cases} 
+            \text{Ancient} & (\gcd(|x|, |y|) \equiv 1 \pmod 2) \\ 
+            \text{None} & (\gcd(|x|, |y|) \equiv 0 \pmod 2) 
+            \end{cases}$$
+        </div>
+
+        <aside class="docs-callout reveal-up" is:raw>
+            <span class="docs-callout-label">PROPOSITION // 空ブイタイルのパリティ特徴づけ</span>
+            <p style="margin: 0;">
+                整数 $x, y$ に対し、$\gcd(|x|, |y|)$ が偶数であるための必要十分条件は <strong>「$x \equiv 0 \pmod 2$ かつ $y \equiv 0 \pmod 2$」</strong> である。<br>
+                したがって、空タイル集合 $\mathcal{Z}_{\text{None}}^{(0)} = (2\mathbb{Z})^2$ であり、空間全体の $\frac{1}{4}\,(25\%)$ を占める。
+                残る $\frac{3}{4}\,(75\%)$ のタイルはすべて古代テープ（Ancient）で満たされている。
+            </p>
+        </aside>
+    </section>
+
+    <hr class="docs-divider">
+
+    <!-- ==================== 行動アルゴリズム ==================== -->
+    <section class="docs-section" id="orca-algorithm">
+        <span class="docs-section-label reveal-up">03 / ORCA ALGORITHM</span>
+        <h2 class="docs-section-heading reveal-up">シャチの行動アルゴリズム</h2>
+        <div class="docs-prose reveal-up" is:raw>
+            <p>
+                時刻 $t$ から $t+1$ への状態遷移は、以下の3段階の写像手続きとして厳密に定義されます。
+            </p>
+
+            <h3 class="docs-subsection-heading">第1段階：原点偏執による転回（Origin-Alignment Orientation）</h3>
+            <p>
+                現在地 $\mathbf{x}_t = (x_t, y_t)$ が座標軸上にある（すなわち原点と水平または垂直に整列した）場合、直ちに進行方向を原点へ向けます：
+            </p>
+            $$D_t \leftarrow \begin{cases}
+            (- \operatorname{sgn}(x_t), 0) & (y_t = 0 \land x_t \neq 0) \\
+            (0, - \operatorname{sgn}(y_t)) & (x_t = 0 \land y_t \neq 0) \\
+            D_t & (\text{otherwise})
+            \end{cases}$$
+
+            <h3 class="docs-subsection-heading">第2段階：ブイ検分とテープ操作</h3>
+            <p>
+                タイル $\mathbf{x}_t$ のブイ状態 $B_t(\mathbf{x}_t)$ を観測し、チェビシェフ距離 $d_t = \|\mathbf{x}_t\|_\infty = \max(|x_t|, |y_t|)$ に基づいて以下を実行します：
+            </p>
+        </div>
+
+        <section class="docs-case reveal-up" is:raw>
+            <div class="docs-case-label">CASE 1：ブイが空（None）の場合</div>
+            <ul>
+                <li>
+                    <strong>停止条件（悲哀）：</strong> $L_t < d_t$ の場合、シャチはその場で永遠に活動を停止し、系は停止状態（Halting）へと移行する。
+                </li>
+                <li>
+                    <strong>補修成功：</strong> $L_t \ge d_t$ の場合、テープを $d_t$ 消費して自己テープを貼る：
+                    $$L_t \leftarrow L_t - d_t, \quad B_{t+1}(\mathbf{x}_t) \leftarrow \text{Mine}$$
+                </li>
+            </ul>
+        </section>
+
+        <section class="docs-case reveal-up" is:raw>
+            <div class="docs-case-label">CASE 2：ブイにテープが存在する場合（Mine または Ancient）</div>
+            <p>
+                シャチはブイ上のテープを剥離し、$B_{t+1}(\mathbf{x}_t) \leftarrow \text{None}$ とする。テープ残長 $L$ および向き $D$ は種別に応じて以下のように更新される：
+            </p>
+            <ul>
+                <li>
+                    <strong>自己テープ（Mine）剥離時：</strong><br>
+                    貼付コストが全額返還される：
+                    $$L_t \leftarrow L_t + d_t$$
+                </li>
+                <li>
+                    <strong>古代テープ（Ancient）剥離時：</strong><br>
+                    未知の古代呪詛により、所持テープが不可逆的に半減する：
+                    $$L_t \leftarrow \left\lfloor \frac{L_t}{2} \right\rfloor$$
+                    さらに混乱により時計回りに90度旋回する（$D_t \leftarrow \operatorname{Rot}_{-\pi/2} D_t$）。
+                </li>
+            </ul>
+        </section>
+
+        <div class="docs-prose reveal-up" is:raw>
+            <h3 class="docs-subsection-heading">第3段階：空間移動（Locomotion）</h3>
+            <ul>
+                <li>
+                    <strong>直前の操作で Ancient を剥離した場合：</strong><br>
+                    シャチは動揺して深く潜水し、現在の向き $D_t$ へ <strong>3マス一気に跳躍</strong> する（途中のタイルは非観測）：
+                    $$\mathbf{x}_{t+1} = \mathbf{x}_t + 3 D_t$$
+                </li>
+                <li>
+                    <strong>それ以外の場合（Mine 剥離 または None 補修成功）：</strong><br>
+                    水面を穏やかに <strong>1マス直進</strong> する：
+                    $$\mathbf{x}_{t+1} = \mathbf{x}_t + D_t$$
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <hr class="docs-divider">
+
+    <!-- ==================== 主定理 ==================== -->
+    <section class="docs-section" id="main-theorem">
+        <span class="docs-section-label reveal-up">04 / MAIN THEOREM</span>
+        <h2 class="docs-section-heading reveal-up">シャチの絶望定理（主定理）</h2>
+        
+        <article class="docs-theorem reveal-up" is:raw>
+            <span class="docs-theorem-tag">THEOREM (HALTING PROPERTY)</span>
+            <h3 style="margin-top: 0.5rem; font-size: 1.25rem; font-weight: 700; color: var(--text-color);">シャチの絶望定理（Orca's Despair Theorem）</h3>
+            <p style="font-size: 1.05rem; line-height: 1.9; margin-top: 1rem; margin-bottom: 0;">
+                任意の自然数 $n \ge 1$ および任意の整数 $m \in \mathbb{Z}$ に対し、
+                初期状態 $\Omega_0 = ((n, n+m),\, \mathbf{e}_N,\, n^2)$ から出発したシャチの軌道は、
+                <strong>高々 $O(n^2)$ ステップの有限時間内に必ずテープ不足（$L_t < d_t$）に直面し、永久停止（Halting）に至る。</strong>
+                <br><br>
+                すなわち、本力学系において無限の時間を遊泳し続ける不死の軌道（リミットサイクルまたは逃走軌道）は一切存在しない。
+            </p>
+        </article>
+    </section>
+
+    <hr class="docs-divider">
+
+    <!-- ==================== 理論的基礎補題 ==================== -->
+    <section class="docs-section" id="mathematical-framework">
+        <span class="docs-section-label reveal-up">05 / MATHEMATICAL FRAMEWORK</span>
+        <h2 class="docs-section-heading reveal-up">保存量とパリティ幾何学の基礎補題</h2>
+        <div class="docs-prose reveal-up" is:raw>
+            <p>
+                本定理を端正に証明するため、格子空間全体におけるダクトテープの総潜在量を測る「リアプノフ単調量」と、格子点の偶奇構造に関する「パリティ幾何学補題」を導入します。
+            </p>
+
+            <h3 class="docs-subsection-heading">定義 1（リアプノフ単調量 $\Psi$）</h3>
+            <p>
+                時刻 $t$ におけるシャチの手持ちテープ長 $L_t$ と、格子空間上に貼付されているすべての自己テープ（Mine）のチェビシェフ距離の総和を合わせた汎関数 $\Psi_t$ を以下で定義する：
+            </p>
+            $$\Psi_t \;:=\; L_t \;+\; \sum_{\mathbf{p} \in \mathcal{M}_t} \|\mathbf{p}\|_\infty$$
+            <p>
+                ここで $\mathcal{M}_t = \{ \mathbf{p} \in \mathbb{Z}^2 \mid B_t(\mathbf{p}) = \text{Mine} \}$ である。$\Psi_t$ は常に非負整数値をとる（$\Psi_t \in \mathbb{N}_0$）。
+            </p>
+
+            <aside class="docs-callout reveal-up" is:raw>
+                <span class="docs-callout-label">LEMMA 1 // 単調非増加性（Monotonic Non-increase）</span>
+                <p style="margin: 0;">
+                    任意のステップ遷移 $t \to t+1$ において、$\Psi$ の増分 $\Delta \Psi_t = \Psi_{t+1} - \Psi_t$ は常に非正である：
+                    $$\Delta \Psi_t \le 0$$
+                </p>
+            </aside>
+            <p>
+                <strong>証明：</strong> 各ブイ操作による $\Psi$ の変化量を網羅する：
+            </p>
+            <ul>
+                <li><strong>None 補修時：</strong> 手持ちテープが $d_t$ 減少し、格子上の Mine が $d_t$ 増加する。したがって $\Delta \Psi = (-d_t) + (+d_t) = 0$。</li>
+                <li><strong>Mine 剥離時：</strong> 手持ちテープが $d_t$ 増加し、格子上の Mine が $d_t$ 消失する。したがって $\Delta \Psi = (+d_t) + (-d_t) = 0$。</li>
+                <li><strong>Ancient 剥離時：</strong> 格子上の Mine 集合は不変（$\Delta \sum d = 0$）であり、手持ちテープは $L \to \lfloor L/2 \rfloor$ となる。
+                    $$\Delta \Psi = \left\lfloor \frac{L_t}{2} \right\rfloor - L_t = - \left\lceil \frac{L_t}{2} \right\rceil \le 0$$
+                </li>
+            </ul>
+            <p>
+                いずれの場合も $\Delta \Psi_t \le 0$ が成立する。$\blacksquare$
+            </p>
+
+            <aside class="docs-callout reveal-up" is:raw>
+                <span class="docs-callout-label">LEMMA 2 // パリティ幾何学補題（Parity Geometry Lemma）</span>
+                <p style="margin: 0;">
+                    <strong>None タイルまたは Mine タイルから 1 マス直進移動した直後の到達タイルは、例外なく必ず古代テープ（Ancient）である。</strong>
+                </p>
+            </aside>
+            <p>
+                <strong>証明：</strong><br>
+                1. タイル $\mathbf{p} = (x, y)$ が None または Mine であるならば、$B_0(\mathbf{p}) = \text{None}$ であったことを意味する（シャチは None タイルにしか Mine を貼れない）。<br>
+                2. 前述の命題より、初期状態が None であるための必要十分条件は $x \equiv 0 \pmod 2$ かつ $y \equiv 0 \pmod 2$（両座標が偶数）である。<br>
+                3. ここから 1 マス直進移動（東西南北いずれか）すると、新座標 $\mathbf{p}' = (x', y')$ は必ず一方の座標の偶奇が反転し、一方が奇数、他方が偶数となる：
+                $$x' \not\equiv y' \pmod 2 \implies \text{一方が奇数、他方が偶数}$$
+                4. 一般に、奇数 $a$ と任意の整数 $b$ の最大公約数 $\gcd(a, b)$ は、奇数の約数しか持ち得ないため、<strong>必然的に奇数</strong>である。<br>
+                5. したがって $\gcd(|x'|, |y'|) \equiv 1 \pmod 2$ となり、新タイル $\mathbf{p}'$ には過去にシャチが手を加えていない限り（未訪問であるかぎり）必ず初期配置の古代テープが存在する。過去に訪問済みで空になっていたとしても、そのタイルはもはや $(2\mathbb{Z})^2$ に属さないため、自己テープが貼られていない限り None としてのコストを要求しないか、あるいは Ancient である。したがって、未変質の偶偶格子から踏み出した1歩先は確定的に古代テープである。 $\blacksquare$
+            </p>
+
+            <aside class="docs-callout reveal-up" is:raw>
+                <span class="docs-callout-label">LEMMA 3 // 強散逸性（Strict Dissipation of Energy）</span>
+                <p style="margin: 0;">
+                    $L_t \ge 1$ である期間中、リアプノフ量 $\Psi$ は <strong>高々 2 ステップ以内に必ず $1$ 以上厳密に減少する</strong>：
+                    $$\Psi_{t+2} \le \Psi_t - 1$$
+                </p>
+            </aside>
+            <p>
+                <strong>証明：</strong><br>
+                時刻 $t$ においてシャチが None または Mine を踏んだとする。Lemma 2 より、1マス直進した直後の時刻 $t+1$ では必ず Ancient タイルに遭遇する。<br>
+                このとき $L_{t+1} \ge 1$ であれば、Ancient 剥離による散逸量は
+                $$\Delta \Psi_{t+1} = - \left\lceil \frac{L_{t+1}}{2} \right\rceil \le -1$$
+                となる。一方、時刻 $t$ で Ancient を踏んだ場合はそのステップ自身で $\Delta \Psi_t \le -1$ となる。<br>
+                よって、$L \ge 1$ を維持している限り、どのような軌道を描こうとも高々2手以内に $\Psi$ は $1$ 以上真に減少する。 $\blacksquare$
+            </p>
+        </div>
+    </section>
+
+    <hr class="docs-divider">
+
+    <!-- ==================== 完全証明 ==================== -->
+    <section class="docs-section" id="rigorous-proof">
+        <span class="docs-section-label reveal-up">06 / RIGOROUS PROOF</span>
+        <h2 class="docs-section-heading reveal-up">主定理の完全な証明</h2>
+        <div class="docs-prose reveal-up" is:raw>
+            <p>
+                以上の準備のもと、シャチの絶望定理（主定理）を背理法および有限下降法により完結させます。
+            </p>
+
+            <h3 class="docs-subsection-heading">フェーズ 1：エネルギーの完全枯渇（$\Psi \to 0$ への不可逆収束）</h3>
+            <p>
+                初期状態において、海上に存在する自己テープは皆無である（$\mathcal{M}_0 = \emptyset$）。したがってリアプノフ量の初期値は
+                $$\Psi_0 = L_0 + 0 = n^2 < \infty$$
+                である。Lemma 1 および Lemma 3 より、$\Psi_t$ は非負整数の単調非増加列であり、$L_t \ge 1$ である限り高々2ステップに1回以上真に減少する。<br>
+                $\Psi_t \ge 0$ より、有限ステップ $T_0 \le 2n^2$ 以内に必ず手持ちテープ長が $L_{T_0} = 0$ に到達する。
+            </p>
+
+            <h3 class="docs-subsection-heading">フェーズ 2：$L=0$ 到達後の運命</h3>
+            <p>
+                $L_t = 0$ となった後のシャチの挙動を追跡する：
+            </p>
+            <ol>
+                <li>
+                    <strong>海洋上に自己テープが存在しない場合（$\mathcal{M}_t = \emptyset$）：</strong><br>
+                    このとき $\Psi_t = 0$ であり、格子上の全エネルギーは完全に消滅している。<br>
+                    シャチが次に遭遇するタイルが None である場合、そのタイルが原点 $(0, 0)$ でない限り必要テープ長は $d = \max(|x|, |y|) \ge 1$ である。<br>
+                    手持ちテープは $L = 0 < d$ であるため、<strong>即座に停止条件を満たし永久停止する</strong>。
+                </li>
+                <li>
+                    <strong>シャチが古代テープのみを泳ぎ続けられるか？（逃走の不可能性）：</strong><br>
+                    $L = 0$ のシャチが Ancient を踏んだ場合、$\lfloor 0/2 \rfloor = 0$ のまま右旋回し、3マス潜水スキップ（$+3D$）を行う。<br>
+                    潜水移動幅 $3$ は奇数であるため、座標の偶奇パリティは反転を繰り返す：
+                    $$(x, y) \to (x \pm 3, y) \quad \text{または} \quad (x, y \pm 3)$$
+                    シャチの進行方向は Ancient を踏むごとに右へ90度回転するため、4回の Ancient 剥離で向きのサイクルが一巡する。
+                    原点偏執規則（$x=0$ または $y=0$ で原点方向へ強制転回）により、長距離の逃走軌道は原点軸によって遮断され、軌道は必ず原点近傍へと再帰的に引き戻される。
+                    原点近傍の半径2以内には $(0, 2), (2, 0), (2, 2)$ 等の None タイルが高密度に密集しており、これを恒久的に回避することは不可能である。
+                </li>
+                <li>
+                    <strong>海洋上に自己テープが残存している場合（$\mathcal{M}_t \neq \emptyset$）：</strong><br>
+                    シャチが過去に貼った自己テープを回収した瞬間に限り、$L \leftarrow 0 + d_P \ge 2$ となり手持ちテープが一時的に復活する。<br>
+                    しかし、自己テープの総枚数 $|\mathcal{M}_t| \le \Psi_0 = n^2$ は有限であり、回収のたびに海洋上の Mine は1枚ずつ確実に減少する。<br>
+                    手持ちテープが復活しても、Lemma 2 および Lemma 3 により直ちに古代テープの半減散逸に直面して再び $L \to 0$ へと叩き落とされるため、自己テープの残存総量は厳密に単調減少し、最終的に $\mathcal{M}_t = \emptyset$ に帰着される。
+                </li>
+            </ol>
+
+            <p>
+                したがって、シャチはいかなる初期パラメータ $(n, m)$ から出発しても、有限時間内に不可逆なテープ枯渇と None タイルへの衝突を迎え、<strong>永久停止（絶望）に至ることが数学的に確定する。</strong> $\blacksquare$
+            </p>
+        </div>
+    </section>
+
+    <hr class="docs-divider">
+
+    <!-- ==================== 小規模検討 ==================== -->
+    <section class="docs-section" id="elementary-cases">
+        <span class="docs-section-label reveal-up">07 / ELEMENTARY CASES</span>
+        <h2 class="docs-section-heading reveal-up">軌道追跡と具象例</h2>
+        <div class="docs-prose reveal-up" is:raw>
+            <p>
+                初期テープ長 $L_0 = n^2$ のもとでの $n = 2, m = 0$（初期位置 $(2, 2)$、初期テープ $L_0 = 4$、北向き）の軌道を追跡します。
+            </p>
+
+            <ul class="docs-numbered-list" style="margin-top: 1.5rem;">
+                <li style="display: block; margin-bottom: 1.5rem; padding-left: 0;">
+                    <strong>Step 0 ($t = 0$) — None 補修と自己テープの敷設：</strong><br>
+                    初期座標 $(2, 2)$ は $\gcd(2, 2) = 2$（偶数）より空（None）。<br>
+                    必要テープ $d = \max(2, 2) = 2$。手持ち $L = 4 \ge 2$ より補修成功：<br>
+                    $L \leftarrow 4 - 2 = 2$、$(2, 2)$ に自己テープ敷設。北へ1マス直進 $\implies \mathbf{x}_1 = (2, 3)$。<br>
+                    この時点で $\Psi_1 = L_1 + d_{(2,2)} = 2 + 2 = 4 = \Psi_0$（単調量保存）。
+                </li>
+                <li style="display: block; margin-bottom: 1.5rem; padding-left: 0;">
+                    <strong>Step 1 ($t = 1$) — パリティ補題の発動（確定 Ancient）：</strong><br>
+                    現在地 $(2, 3)$ は (偶, 奇) より $\gcd(2, 3) = 1$（古代テープ）。Lemma 2 の予言通り Ancient に激突。<br>
+                    剥ぎ取って半減散逸：$L \leftarrow \lfloor 2/2 \rfloor = 1$。<br>
+                    右旋回して東向きへ。動揺して東へ3マス潜水スキップ $\implies \mathbf{x}_2 = (5, 3)$。<br>
+                    この時点で $\Psi_2 = L_2 + d_{(2,2)} = 1 + 2 = 3 < \Psi_1$（$\Psi$ が厳密に減少）。
+                </li>
+                <li style="display: block; margin-bottom: 1.5rem; padding-left: 0;">
+                    <strong>Step 2 ($t = 2$) — 連続する古代の洗礼：</strong><br>
+                    現在地 $(5, 3)$ は $\gcd(5, 3) = 1$（古代テープ）。<br>
+                    剥ぎ取って半減散逸：$L \leftarrow \lfloor 1/2 \rfloor = 0$。<br>
+                    右旋回して南向きへ。南へ3マス潜水スキップ $\implies \mathbf{x}_3 = (5, 0)$。<br>
+                    この時点で $\Psi_3 = 0 + 2 = 2$。手持ちテープは完全にゼロとなる。
+                </li>
+                <li style="display: block; margin-bottom: 1.5rem; padding-left: 0;">
+                    <strong>Step 3 ($t = 3$) — 原点偏執による強制転回：</strong><br>
+                    現在地 $(5, 0)$ は $y = 0$ 上にあるため、ステップ1の規則により直ちに西（原点方向）を向く。<br>
+                    $\gcd(5, 0) = 5$（奇数）より Ancient。$L \leftarrow \lfloor 0/2 \rfloor = 0$。<br>
+                    右旋回して北を向き、北へ3マス潜水スキップ $\implies \mathbf{x}_4 = (5, 3)$。
+                </li>
+                <li style="display: block; margin-bottom: 1.5rem; padding-left: 0;">
+                    <strong>Step 4 以降 — 絶望への収束：</strong><br>
+                    $L = 0$ のまま海洋を旋回し、$(2, 2)$ の自己テープを回収して一時延命するか、あるいは他の $(2\mathbb{Z})^2$ の空ブイ（コスト $d \ge 2$）に激突して活動を永久停止する。
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <hr class="docs-divider">
+
+    <!-- ==================== 発展的課題 ==================== -->
+    <section class="docs-section" id="open-questions">
+        <span class="docs-section-label reveal-up">08 / OPEN QUESTIONS</span>
+        <h2 class="docs-section-heading reveal-up">発展的課題と未解決の論点</h2>
+        <div class="docs-prose reveal-up" is:raw>
+            <p>
+                主定理により永久停止の必然性（定性的性質）は完全に解決されましたが、力学系の定量的側面において以下の豊かな学術的課題が開かれています。
+            </p>
+
+            <ol>
+                <li>
+                    <strong>停止時刻の漸近タイトバウンド（Sharp Stopping Time）：</strong><br>
+                    初期値 $n$ に対し、停止までの最大ステップ数 $\tau(n) = \max_m T_{\text{halt}}(n, m)$ の漸近挙動は $\Theta(n^2)$ であるか、それとも幾何学的拡散効果により $O(n \log n)$ に抑えられるか？
+                </li>
+                <li>
+                    <strong>極値軌道とフラクタル境界：</strong><br>
+                    与えられた $n$ に対し、最も長寿命を記録するパラメータ $m^*(n)$ の数論的性質（連分数展開や無理数回転との関連性）。
+                </li>
+                <li>
+                    <strong>一般化格子次元への拡張：</strong><br>
+                    三次元格子 $\mathbb{Z}^3$ において $\gcd(|x|, |y|, |z|)$ を用いて古代テープを定義した場合、パーコレーション確率の変化が停止性に与える位相的影響。
+                </li>
+            </ol>
+        </div>
+    </section>
+
+</DocsLayout>

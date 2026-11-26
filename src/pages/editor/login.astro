@@ -80,7 +80,9 @@ import Layout from '../../layouts/Layout.astro';
 
             if (res.ok && data.success && data.token) {
                 setToken(data.token);
-                window.location.href = '/editor';
+                const redirectParam = new URLSearchParams(window.location.search).get('redirect');
+                const targetUrl = redirectParam && redirectParam.startsWith('/') ? redirectParam : '/editor';
+                window.location.href = targetUrl;
             } else {
                 errorMsg.textContent = data.error || `ログインに失敗しました (Status: ${res.status})`;
                 errorMsg.style.display = 'block';

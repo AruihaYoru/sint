@@ -1,0 +1,427 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+
+export const title = "【物理計算】ヒトが「10cm石膏ボード」をトンネル効果ですり抜ける確率";
+export const description = "インターネット上で挙げられる 10^{-10^{38}} 〜 10^{-10^{41}} や 10^{-3.4×10^{39}} というトンネル確率。10cm石膏ボードと70kgの標準的なヒトという現実的条件を設定し、人体組成と石膏結晶の物性パラメータから計算過程を展開します。";
+export const specId = "SPEC-04";
+export const tag = "QUANTUM PHYSICS";
+export const publishedDate = "2026.11.07";
+export const author = "AruihaYoru";
+
+const faqs = [
+    {
+        q: "どのような条件を設定して計算していますか？",
+        a: "建築で一般的な『厚さ10cmの石膏ボード（二水石膏 CaSO4・2H2O）』と『体重70kgの成人（ICRP元素組成）』を条件として設定しています。"
+    },
+    {
+        q: "10cmの石膏ボードを人間がすり抜ける計算確率はいくつですか？",
+        a: "人間全体を1つの粒子として扱った場合は 10^{-10^{34〜35}}、人体の全核子が同時に透過する多体モデル（障壁15〜18eV）では 10^{-3.1×10^{39}} 〜 10^{-3.4×10^{39}} となります。"
+    },
+    {
+        q: "現実の物理空間ですり抜けることは可能ですか？",
+        a: "常温大気中での量子デコヒーレンス時間（10^{-26}秒以下）や原子間結合の破壊により、現実の環境では実質的にゼロとなります。"
+    }
+];
+
+const toc = [
+    { id: "introduction", label: "はじめに" },
+    { id: "conditions", label: "計算条件の設定：人体組成と石膏結晶の物性パラメータ" },
+    { id: "macro-calculation", label: "単一粒子近似による計算過程" },
+    { id: "multibody-calculation", label: "全核子の多体同時トンネルによる計算過程" },
+    { id: "elemental-breakdown", label: "元素別および電子を含む詳細積算の検討" },
+    { id: "physical-reality", label: "現実の物理的制約" },
+    { id: "conclusion", label: "結論" }
+];
+---
+
+<DocsLayout
+    title={title}
+    description={description}
+    specId={specId}
+    tag={tag}
+    publishedDate={publishedDate}
+    author={author}
+    faqs={faqs}
+    toc={toc}
+>
+
+    <!-- ==================== 導入 ==================== -->
+    <p>10cmの石膏ボードを標準的なヒトがトンネル効果ですり抜ける確率について、現実的な条件を設定して計算過程を展開します。</p>
+    <span style="height:2rem"></span>
+    <section class="docs-section" id="introduction">
+        <span class="docs-section-label reveal-up">01 / INTRODUCTION</span>
+        <h2 class="docs-section-heading reveal-up">はじめに</h2>
+        <div class="docs-prose reveal-up" is:raw>
+            <p>
+                インターネット上で量子力学の「トンネル効果」について調べると、巨視的なスケールの例えとして「人間が壁をすり抜ける確率」がしばしば言及されます。<br>
+                そこでは主に以下のような数値が提示されています。
+            </p>
+            <ul>
+                <li>$10^{-10^{38}} \sim 10^{-10^{41}}$</li>
+                <li>$10^{-3.4 \times 10^{39}} \sim 10^{-3.1 \times 10^{39}}$</li>
+            </ul>
+            <p>
+                しかし、これらの数値がどのような前提やパラメータから計算されたのかは解説によって様々であり、具体的な条件設定が省かれていることも少なくありません。<br>
+                そこで本稿では、「厚さ10cmの石膏ボード」と「体重70kgの成人」という現実的な条件を明確に設定し、人体組成や結晶物性の値を用いて実際に計算を行うとどのような確率が導出されるのかを展開します。
+            </p>
+        </div>
+    </section>
+
+    <hr class="docs-divider">
+
+    <!-- ==================== 条件設定 ==================== -->
+    <section class="docs-section" id="conditions">
+        <span class="docs-section-label reveal-up">02 / SETUP & PARAMETERS</span>
+        <h2 class="docs-section-heading reveal-up">計算条件の設定：人体組成と石膏結晶の物性パラメータ</h2>
+        <div class="docs-prose reveal-up" is:raw>
+            <p>
+                計算に使用する侵入者（人体）と障壁（石膏ボード）の物理パラメータを設定します。
+            </p>
+
+            <h3>1. 侵入者の条件：70kg人体の元素別ブレイクダウン</h3>
+            <p>
+                ICRP（国際放射線防護委員会）の標準人（Reference Man）データに基づき、体重 70.0 kg の成人の元素組成を以下のように設定します。
+            </p>
+
+            <table style="width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.92rem;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+                        <th style="padding: 0.6rem;">構成元素</th>
+                        <th style="padding: 0.6rem;">質量割合 (%)</th>
+                        <th style="padding: 0.6rem;">総質量 (kg)</th>
+                        <th style="padding: 0.6rem;">原子量 $A$</th>
+                        <th style="padding: 0.6rem;">原子数 $N_i$ (個)</th>
+                        <th style="padding: 0.6rem;">原子番号 $Z$</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.6rem;">酸素 (O)</td>
+                        <td style="padding: 0.6rem;">65.0%</td>
+                        <td style="padding: 0.6rem;">45.50</td>
+                        <td style="padding: 0.6rem;">15.999</td>
+                        <td style="padding: 0.6rem;">$1.713 \times 10^{27}$</td>
+                        <td style="padding: 0.6rem;">8</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.6rem;">炭素 (C)</td>
+                        <td style="padding: 0.6rem;">18.5%</td>
+                        <td style="padding: 0.6rem;">12.95</td>
+                        <td style="padding: 0.6rem;">12.011</td>
+                        <td style="padding: 0.6rem;">$6.493 \times 10^{26}$</td>
+                        <td style="padding: 0.6rem;">6</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.6rem;">水素 (H)</td>
+                        <td style="padding: 0.6rem;">9.5%</td>
+                        <td style="padding: 0.6rem;">6.65</td>
+                        <td style="padding: 0.6rem;">1.008</td>
+                        <td style="padding: 0.6rem;">$3.973 \times 10^{27}$</td>
+                        <td style="padding: 0.6rem;">1</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.6rem;">窒素 (N)</td>
+                        <td style="padding: 0.6rem;">3.2%</td>
+                        <td style="padding: 0.6rem;">2.24</td>
+                        <td style="padding: 0.6rem;">14.007</td>
+                        <td style="padding: 0.6rem;">$9.631 \times 10^{25}$</td>
+                        <td style="padding: 0.6rem;">7</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.6rem;">カルシウム (Ca)</td>
+                        <td style="padding: 0.6rem;">1.5%</td>
+                        <td style="padding: 0.6rem;">1.05</td>
+                        <td style="padding: 0.6rem;">40.078</td>
+                        <td style="padding: 0.6rem;">$1.578 \times 10^{25}$</td>
+                        <td style="padding: 0.6rem;">20</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.6rem;">リン (P)</td>
+                        <td style="padding: 0.6rem;">1.0%</td>
+                        <td style="padding: 0.6rem;">0.70</td>
+                        <td style="padding: 0.6rem;">30.974</td>
+                        <td style="padding: 0.6rem;">$1.361 \times 10^{25}$</td>
+                        <td style="padding: 0.6rem;">15</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.6rem;">その他微量元素 (K, S, Na, Cl, Mg)</td>
+                        <td style="padding: 0.6rem;">1.3%</td>
+                        <td style="padding: 0.6rem;">0.91</td>
+                        <td style="padding: 0.6rem;">—</td>
+                        <td style="padding: 0.6rem;">$1.838 \times 10^{25}$</td>
+                        <td style="padding: 0.6rem;">—</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>
+                この元素別内訳から集計すると、人体に含まれる総数は以下の通りになります。
+            </p>
+            <ul>
+                <li><strong>総原子数（原子核の個数）:</strong> $N_{\text{atoms}} = \sum N_i \approx 6.47 \times 10^{27} \text{ 個}$</li>
+                <li><strong>総核子数（陽子＋中性子の総和）:</strong> $N_{\text{nuc}} = \sum (N_i \times A_i) \approx 4.21 \times 10^{28} \text{ 個}$</li>
+                <li><strong>総電子数:</strong> 電気的中性条件 $\sum (N_i \times Z_i) \approx 2.30 \times 10^{28} \text{ 個}$</li>
+            </ul>
+
+            <h3>2. 障壁の条件：石膏ボード（二水石膏 $\text{CaSO}_4 \cdot 2\text{H}_2\text{O}$）の物性プロファイル</h3>
+            <p>
+                石膏ボードの主成分である二水石膏結晶の構造パラメータは以下の通りです。
+            </p>
+            <ul>
+                <li><strong>化学式:</strong> $\text{CaSO}_4 \cdot 2\text{H}_2\text{O}$（式量 $M_w = 172.17 \text{ g/mol}$）</li>
+                <li><strong>結晶構造:</strong> 単斜晶系。カルシウムイオン $\text{Ca}^{2+}$ と硫酸イオン $\text{SO}_4^{2-}$ が形成する強固なイオンシートの間に、水素結合した水分子 $\text{H}_2\text{O}$ 層が挟まれた層状構造を持ちます。</li>
+                <li><strong>結晶密度:</strong> $\rho_{\text{crystal}} \approx 2.32 \text{ g/cm}^3$（建築用ボードの多孔質コアの見かけ密度は $\rho_{\text{board}} \approx 0.70 \sim 0.85 \text{ g/cm}^3$）</li>
+                <li><strong>厚さ:</strong> $L = 0.10 \text{ m}$ ($10 \text{ cm}$)</li>
+                <li><strong>10cm内部に並ぶ分子層数:</strong> 単位格子長 $c \approx 0.5 \sim 0.6 \text{ nm}$ より、厚さ 10cm には直列に約 $2.0 \times 10^8$ 層の分子層が並びます。</li>
+            </ul>
+
+            <p>
+                <strong>ポテンシャル障壁 $V_0 - E$:</strong><br>
+                石膏の光学バンドギャップは約 $6.0 \text{ eV}$ です。
+                格子内を原子や核子が通り抜ける際に直面するポテンシャル井戸の深さ（Madelung ポテンシャルおよび原子価電子の束縛エネルギー）は、典型的なイオン結晶においておよそ $10 \sim 25 \text{ eV}$（$1 \text{ eV} \approx 1.602 \times 10^{-19} \text{ J}$）の範囲に位置します。<br>
+                人間が歩行する運動エネルギー（$v \approx 1 \text{ m/s}$）は原子1個あたり $E_i \approx 10^{-8} \text{ eV}$ 程度であるため、$E \ll V_0$ として計算します。
+            </p>
+        </div>
+    </section>
+
+    <hr class="docs-divider">
+
+    <!-- ==================== 計算1：単一粒子モデル ==================== -->
+    <section class="docs-section" id="macro-calculation">
+        <span class="docs-section-label reveal-up">03 / SINGLE-BODY APPROXIMATION</span>
+        <h2 class="docs-section-heading reveal-up">単一粒子近似による計算過程</h2>
+        <div class="docs-prose reveal-up" is:raw>
+            <p>
+                まず、人体全体を質量 $M = 70.0 \text{ kg}$ の1つの質点として扱い、一次元矩形ポテンシャル障壁に対する WKB 透過係数を算出します。
+            </p>
+            $$T \approx \exp(-2\kappa L), \quad \kappa = \frac{\sqrt{2M \Delta V}}{\hbar}$$
+            <p>
+                ここで $\hbar \approx 1.05457 \times 10^{-34} \text{ J}\cdot\text{s}$ です。<br>
+                歩行時の接触エネルギーに相当する力学的障壁 $\Delta V = 10.0 \text{ J}$ を代入すると、減衰定数 $\kappa$ は以下のようになります。
+            </p>
+            $$\kappa = \frac{\sqrt{2 \times 70.0 \text{ kg} \times 10.0 \text{ J}}}{1.05457 \times 10^{-34} \text{ J}\cdot\text{s}} = \frac{\sqrt{1400}}{1.05457 \times 10^{-34}} \approx \frac{37.4166}{1.05457 \times 10^{-34}} \approx 3.548 \times 10^{35} \text{ m}^{-1}$$
+            <p>
+                壁の厚さ $L = 0.10 \text{ m}$ を掛けると：
+            </p>
+            $$2\kappa L = 2 \times (3.548 \times 10^{35} \text{ m}^{-1}) \times 0.10 \text{ m} \approx 7.096 \times 10^{34}$$
+            <p>
+                常用対数に変換します（$\log_{10} e \approx 0.43429$）：
+            </p>
+            $$\log_{10} T = -(2\kappa L) \log_{10} e \approx -(7.096 \times 10^{34}) \times 0.43429 \approx -3.08 \times 10^{34}$$
+            <p>
+                したがって、透過確率は $T \approx 10^{-3.08 \times 10^{34}}$ と求まります。<br>
+                力学的反発障壁 $\Delta V$ の大きさを変えて計算した結果が以下です。
+            </p>
+
+            <table style="width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+                        <th style="padding: 0.75rem;">力学的障壁 $\Delta V$</th>
+                        <th style="padding: 0.75rem;">想定される状況</th>
+                        <th style="padding: 0.75rem;">減衰指数 $2\kappa L$</th>
+                        <th style="padding: 0.75rem;">透過確率 $\log_{10} T$</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.75rem;">$1.0 \text{ J}$</td>
+                        <td style="padding: 0.75rem;">静かに壁に接触する反発</td>
+                        <td style="padding: 0.75rem;">$2.24 \times 10^{34}$</td>
+                        <td style="padding: 0.75rem;">$-9.75 \times 10^{33}$</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.75rem;">$10.0 \text{ J}$</td>
+                        <td style="padding: 0.75rem;">歩行時の接触エネルギー</td>
+                        <td style="padding: 0.75rem;">$7.10 \times 10^{34}$</td>
+                        <td style="padding: 0.75rem;">$-3.08 \times 10^{34}$</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.75rem;">$100.0 \text{ J}$</td>
+                        <td style="padding: 0.75rem;">走って体当たりするエネルギー</td>
+                        <td style="padding: 0.75rem;">$2.24 \times 10^{35}$</td>
+                        <td style="padding: 0.75rem;">$-9.75 \times 10^{34}$</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>
+                人体を単一の巨視的粒子として扱った場合、透過確率は <strong>$T \approx 10^{-10^{34}} \sim 10^{-10^{35}}$</strong> のオーダーとなります。
+            </p>
+        </div>
+    </section>
+
+    <hr class="docs-divider">
+
+    <!-- ==================== 計算2：多体モデル ==================== -->
+    <section class="docs-section" id="multibody-calculation">
+        <span class="docs-section-label reveal-up">04 / MULTI-BODY TUNNELING</span>
+        <h2 class="docs-section-heading reveal-up">全核子の多体同時トンネルによる計算過程</h2>
+        <div class="docs-prose reveal-up" is:raw>
+            <p>
+                次に、人体の全構成核子がそれぞれ個別に 10cm の石膏壁をトンネルし、全員が同時に反対側へ抜ける多体モデルの計算過程を展開します。
+            </p>
+
+            <h3>ステップ1：単一核子の透過確率の算出</h3>
+            <p>
+                平均核子質量 $m_N \approx 1.674 \times 10^{-27} \text{ kg}$ を持つ粒子1個が、原子結合障壁 $V_0 - E$（例として $18.0 \text{ eV} = 18.0 \times 1.60218 \times 10^{-19} \text{ J} \approx 2.884 \times 10^{-18} \text{ J}$）をトンネルする場合を計算します。
+            </p>
+            $$\kappa_N = \frac{\sqrt{2 \times (1.674 \times 10^{-27} \text{ kg}) \times (2.884 \times 10^{-18} \text{ J})}}{1.05457 \times 10^{-34} \text{ J}\cdot\text{s}} \approx \frac{\sqrt{9.655 \times 10^{-45}}}{1.05457 \times 10^{-34}} \approx \frac{9.826 \times 10^{-23}}{1.05457 \times 10^{-34}} \approx 9.318 \times 10^{11} \text{ m}^{-1}$$
+            <p>
+                厚さ $L = 0.10 \text{ m}$ を掛けると：
+            </p>
+            $$2\kappa_N L = 2 \times (9.318 \times 10^{11} \text{ m}^{-1}) \times 0.10 \text{ m} \approx 1.864 \times 10^{11}$$
+            <p>
+                常用対数に換算すると、核子1個の透過確率は：
+            </p>
+            $$\log_{10} T_1 = -(1.864 \times 10^{11}) \times 0.43429 \approx -8.09 \times 10^{10}$$
+
+            <h3>ステップ2：全核子の同時透過積</h3>
+            <p>
+                人体の全核子数 $N_{\text{nuc}} \approx 4.18 \times 10^{28}$ 個が同時に透過する同時確率 $T_{\text{total}} = (T_1)^{N_{\text{nuc}}}$ を計算します。
+            </p>
+            $$\log_{10} T_{\text{total}} = N_{\text{nuc}} \times \log_{10} T_1 \approx (4.182 \times 10^{28}) \times (-8.093 \times 10^{10}) \approx -3.385 \times 10^{39}$$
+            <p>
+                これにより、透過確率は <strong>$T_{\text{total}} \approx 10^{-3.38 \times 10^{39}} \approx 10^{-3.4 \times 10^{39}}$</strong> となります。
+            </p>
+
+            <p>
+                二水石膏結晶の物性（バンドギャップ約 6.0 eV、結晶の共有結合や Madelung イオンポテンシャル）から、格子トンネルにおいて想定される実効的な障壁エネルギーの代表範囲（$15.0 \sim 18.0 \text{ eV}$）をハイライトした計算一覧が以下の表です。
+            </p>
+
+            <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; font-size: 0.95rem; border-top: 2px solid var(--text-color); border-bottom: 2px solid var(--text-color);">
+                <thead>
+                    <tr style="text-align: left;">
+                        <th style="padding: 0.6rem 0.75rem 0.2rem 0.75rem; font-weight: 700;">原子ポテンシャル障壁</th>
+                        <th style="padding: 0.6rem 0.75rem 0.2rem 0.75rem; font-weight: 700;">核子1個の透過確率</th>
+                        <th style="padding: 0.6rem 0.75rem 0.2rem 0.75rem; font-weight: 700;">全核子同時透過確率</th>
+                        <th style="padding: 0.6rem 0.75rem 0.2rem 0.75rem; font-weight: 700;">透過確率</th>
+                    </tr>
+                    <tr style="border-bottom: 1.5px solid var(--text-color); text-align: left;">
+                        <th style="padding: 0.2rem 0.75rem 0.75rem 0.75rem; font-weight: normal; color: var(--text-muted);">$V_0 - E$</th>
+                        <th style="padding: 0.2rem 0.75rem 0.75rem 0.75rem; font-weight: normal; color: var(--text-muted);">$\log_{10} T_1$</th>
+                        <th style="padding: 0.2rem 0.75rem 0.75rem 0.75rem; font-weight: normal; color: var(--text-muted);">$\log_{10} T_{\text{total}}$</th>
+                        <th style="padding: 0.2rem 0.75rem 0.75rem 0.75rem; font-weight: normal; color: var(--text-muted);">$T_{\text{total}}$</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.85rem 0.75rem;">$5.0 \text{ eV}$</td>
+                        <td style="padding: 0.85rem 0.75rem;">$-4.26 \times 10^{10}$</td>
+                        <td style="padding: 0.85rem 0.75rem;">$-1.78 \times 10^{39}$</td>
+                        <td style="padding: 0.85rem 0.75rem;">$10^{-1.78 \times 10^{39}}$</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.85rem 0.75rem;">$10.0 \text{ eV}$</td>
+                        <td style="padding: 0.85rem 0.75rem;">$-6.03 \times 10^{10}$</td>
+                        <td style="padding: 0.85rem 0.75rem;">$-2.52 \times 10^{39}$</td>
+                        <td style="padding: 0.85rem 0.75rem;">$10^{-2.52 \times 10^{39}}$</td>
+                    </tr>
+                    <tr style="background: rgba(255, 255, 255, 0.05); font-weight: 700;">
+                        <td style="padding: 0.85rem 0.75rem;">$15.0 \text{ eV}$</td>
+                        <td style="padding: 0.85rem 0.75rem;">$-7.39 \times 10^{10}$</td>
+                        <td style="padding: 0.85rem 0.75rem;">$-3.09 \times 10^{39}$</td>
+                        <td style="padding: 0.85rem 0.75rem;">$10^{-3.1 \times 10^{39}}$</td>
+                    </tr>
+                    <tr style="background: rgba(255, 255, 255, 0.08); font-weight: 700; border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.85rem 0.75rem;">$18.0 \text{ eV}$</td>
+                        <td style="padding: 0.85rem 0.75rem;">$-8.09 \times 10^{10}$</td>
+                        <td style="padding: 0.85rem 0.75rem;">$-3.38 \times 10^{39}$</td>
+                        <td style="padding: 0.85rem 0.75rem;">$10^{-3.4 \times 10^{39}}$</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.85rem 0.75rem;">$20.0 \text{ eV}$</td>
+                        <td style="padding: 0.85rem 0.75rem;">$-8.53 \times 10^{10}$</td>
+                        <td style="padding: 0.85rem 0.75rem;">$-3.57 \times 10^{39}$</td>
+                        <td style="padding: 0.85rem 0.75rem;">$10^{-3.57 \times 10^{39}}$</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <hr class="docs-divider">
+
+    <!-- ==================== 元素別・電子を含む詳細積算 ==================== -->
+    <section class="docs-section" id="elemental-breakdown">
+        <span class="docs-section-label reveal-up">05 / DETAILED ELEMENTAL INTEGRATION</span>
+        <h2 class="docs-section-heading reveal-up">元素別および電子を含む詳細積算の検討</h2>
+        <div class="docs-prose reveal-up" is:raw>
+            <p>
+                人体の元素組成表に基づき、各元素の原子核（質量 $m_i = A_i u$）と電子（質量 $m_e \approx 9.109 \times 10^{-31} \text{ kg}$）を個別に計算して積算した結果を検討します。
+            </p>
+
+            <h3>各成分の寄与の計算</h3>
+            <p>
+                障壁ポテンシャル $V_0 - E = 18.0 \text{ eV}$、厚さ $L = 0.10 \text{ m}$ の条件において、主要元素の原子核ごとの指数寄与 $\log_{10} T_i = N_i \times \log_{10} T_{\text{single}, i}$ は以下のようになります。
+            </p>
+            <ul>
+                <li><strong>酸素原子核 ($A=16, N_{\text{O}} \approx 1.71 \times 10^{27}$):</strong><br>
+                    総指数寄与は $\approx -5.53 \times 10^{38}$ となります。
+                </li>
+                <li><strong>水素原子核（陽子単体, $A=1, N_{\text{H}} \approx 3.97 \times 10^{27}$):</strong><br>
+                    総指数寄与は $\approx -3.21 \times 10^{38}$ となります。
+                </li>
+                <li><strong>炭素原子核 ($A=12, N_{\text{C}} \approx 6.49 \times 10^{26}$):</strong><br>
+                    総指数寄与は $\approx -1.82 \times 10^{38}$ となります。
+                </li>
+                <li><strong>電子系 ($N_e \approx 2.30 \times 10^{28}$):</strong><br>
+                    電子質量 $m_e$ は核子質量の約 $\frac{1}{1836}$ であるため、減衰定数は小さく、全電子の総指数寄与は $\approx -4.34 \times 10^{37}$ となります。
+                </li>
+            </ul>
+
+            <p>
+                原子核を元素ごとに独立した塊として扱うモデルの場合、全原子核の同時透過確率は $\log_{10} T \approx -1.11 \times 10^{39}$ となり、全核子を一様として扱ったモデル（$\log_{10} T \approx -3.38 \times 10^{39}$）と同様に <strong>$10^{-10^{39}}$ のオーダー領域</strong> となることが確認できます。
+            </p>
+        </div>
+    </section>
+
+    <hr class="docs-divider">
+
+    <!-- ==================== 現実的環境における物理的制約 ==================== -->
+    <section class="docs-section" id="physical-reality">
+        <span class="docs-section-label reveal-up">06 / PHYSICAL CONSTRAINTS</span>
+        <h2 class="docs-section-heading reveal-up">現実の物理的制約</h2>
+        <div class="docs-prose reveal-up" is:raw>
+            <p>
+                数式上は上記のような計算値が得られますが、現実の物理空間において人間が壁をすり抜けることには、以下の物理的制約が伴います。
+            </p>
+
+            <h3>1. 量子デコヒーレンス</h3>
+            <p>
+                トンネル効果が起こるためには、障壁内部で波動関数の可干渉性（コヒーレンス）が維持されている必要があります。<br>
+                常温（300K）大気中にある人体は、熱光子の放射や空気分子との衝突によって環境と絶えず相互作用しており、環境デコヒーレンス時間 $\tau_D$ は以下のように極めて短くなります。
+            </p>
+            $$\tau_D \approx 10^{-26} \sim 10^{-30} \text{ 秒}$$
+            <p>
+                この微小時間ごとに波束の収縮（位置測定）が繰り返されるため、厚さ10cmにわたって巨視的な波束が障壁を透過することは物理的に遮断されます。
+            </p>
+
+            <h3>2. 構成粒子の結合解離</h3>
+            <p>
+                多体モデルの計算は「全粒子が独立に透過する」ことを前提としています。<br>
+                しかし人体は、DNAやタンパク質、骨の結晶構造など、原子間の共有結合や相互作用によって形作られています。
+                各粒子が個別に独立してトンネルした場合、透過後にそれらが元の結合配置を再現して人間として再構成されることは統計力学的に起こり得ません。
+            </p>
+        </div>
+    </section>
+
+    <hr class="docs-divider">
+
+    <!-- ==================== 結論 ==================== -->
+    <section class="docs-section" id="conclusion">
+        <span class="docs-section-label reveal-up">07 / CONCLUSION</span>
+        <h2 class="docs-section-heading reveal-up">結論</h2>
+        <div class="docs-prose reveal-up" is:raw>
+            <p>
+                現実的な条件（10cm石膏ボード、70kgのヒト）をもとに計算した結果は以下の通りです。
+            </p>
+
+            <ul>
+                <li><strong>人間全体を1つの粒子として扱った場合:</strong> 力学的反発障壁による透過確率は $10^{-10^{34}} \sim 10^{-10^{35}}$ となります。</li>
+                <li><strong>全核子が独立に同時透過する場合:</strong> 石膏の原子結合エネルギー（$15 \sim 18 \text{ eV}$）において、透過確率は $10^{-3.1 \times 10^{39}} \sim 10^{-3.4 \times 10^{39}}$ となります。</li>
+                <li><strong>現実的な物理的帰結:</strong> 常温環境下での急速な量子デコヒーレンス（$10^{-26}$ 秒以下）および分子間結合の散逸により、現実空間で人間が原型を保って10cmの石膏ボードをすり抜ける確率は実質的にゼロとなります。</li>
+            </ul>
+        </div>
+    </section>
+
+</DocsLayout>

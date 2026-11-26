@@ -91,11 +91,17 @@ import Layout from '../../layouts/Layout.astro';
             specs.forEach(spec => {
                 const card = document.createElement('div');
                 card.className = 'spec-card';
+                const isMembers = spec.visibility === 'members';
+                const visBadge = isMembers
+                    ? `<span class="spec-vis-badge members">🔒 MEMBERS ONLY</span>`
+                    : `<span class="spec-vis-badge public">PUBLIC</span>`;
+
                 card.innerHTML = `
                     <div class="spec-header">
                         <div class="spec-meta">
                             <span class="spec-id">${spec.specId}</span>
                             <span class="spec-tag">${spec.tag}</span>
+                            ${visBadge}
                             <span class="spec-date">${spec.publishedDate}</span>
                         </div>
                         <div class="card-actions">
@@ -279,6 +285,27 @@ import Layout from '../../layouts/Layout.astro';
     color: #111827;
     padding: 2px 6px;
     letter-spacing: 0.1em;
+}
+
+.spec-vis-badge {
+    font-family: var(--font-en);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    padding: 2px 7px;
+    border-radius: 2px;
+}
+
+.spec-vis-badge.members {
+    background: #1e1b4b;
+    color: #e0e7ff;
+    border: 1px solid #4338ca;
+}
+
+.spec-vis-badge.public {
+    background: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #d1d5db;
 }
 
 .spec-date {
