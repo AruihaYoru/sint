@@ -1366,8 +1366,7 @@ body.light-theme .chronicle-emphasis {
 }
 
 .email-block-header::before {
-    content: '✉';
-    font-size: 1rem;
+    content: '';
 }
 
 .email-block-body {

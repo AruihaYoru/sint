@@ -156,7 +156,12 @@ import '../../styles/docs.css';
                     specBodyEl.innerHTML = `
                         <div class="members-lock-container">
                             <div class="members-lock-card">
-                                <div class="lock-shield-icon">🔒</div>
+                                <div class="lock-shield-icon">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle;">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    </svg>
+                                </div>
                                 <div class="lock-status-tag">RESTRICTED ACCESS // MEMBERS ONLY</div>
                                 <h3 class="lock-card-title">この記事はSINTメンバー限定です</h3>
                                 <p class="lock-card-desc">

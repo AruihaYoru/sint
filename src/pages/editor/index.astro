@@ -93,7 +93,7 @@ import Layout from '../../layouts/Layout.astro';
                 card.className = 'spec-card';
                 const isMembers = spec.visibility === 'members';
                 const visBadge = isMembers
-                    ? `<span class="spec-vis-badge members">🔒 MEMBERS ONLY</span>`
+                    ? `<span class="spec-vis-badge members">MEMBERS ONLY</span>`
                     : `<span class="spec-vis-badge public">PUBLIC</span>`;
 
                 card.innerHTML = `
