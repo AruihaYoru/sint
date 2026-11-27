@@ -24,7 +24,7 @@ const articles = Object.entries(posts)
     });
 ---
 
-<Layout title="SINT - Docs / 技術仕様書" description="Scratch数論研究会(SINT)の技術仕様書、学術資料、および研究ノート。">
+<Layout title="SINT - Docs" description="Scratch数論研究会(SINT)のDocs・研究資料。">
     <!-- ヒーローセクション -->
     <section class="faq-hero">
         <h1 class="apply-title reveal-up">DOCS</h1>
@@ -37,9 +37,9 @@ const articles = Object.entries(posts)
         <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
             <div>
                 <span class="section-num reveal-up">01 / ARCHIVES</span>
-                <h2 class="section-text reveal-up">公開仕様書・研究資料</h2>
+                <h2 class="section-text reveal-up">公開Docs・研究資料</h2>
             </div>
-            <a href="/editor" class="editor-portal-link reveal-up">SPEC EDITOR ↗</a>
+            <a href="/editor" class="editor-portal-link reveal-up">DOCS EDITOR ↗</a>
         </div>
 
         <div class="docs-list" id="docsList">
@@ -62,7 +62,7 @@ const articles = Object.entries(posts)
                         <div class="docs-footer-meta">
                             <span class="docs-date">PUBLISHED: {article.publishedDate}</span>
                             <span class="docs-date">Written by: {typeof (article as any).author === 'string' ? getAuthor((article as any).author).name : ((article as any).author?.name || (article as any).author || 'Unknown')}</span>
-                            <a href={article.url} class="docs-readmore">READ SPECIFICATION ↗</a>
+                            <a href={article.url} class="docs-readmore">READ DOC ↗</a>
                         </div>
                     </div>
                 </div>
@@ -105,7 +105,7 @@ const articles = Object.entries(posts)
                     const lockBadge = isMembers
                         ? `<span class="docs-lock-badge">MEMBERS ONLY</span>`
                         : '';
-                    const readMoreText = isMembers ? 'VIEW MEMBER SPEC ↗' : 'READ SPECIFICATION ↗';
+                    const readMoreText = isMembers ? 'VIEW MEMBERS DOC ↗' : 'READ DOC ↗';
 
                     item.innerHTML = `
                         <div class="docs-meta">

@@ -4,21 +4,21 @@ import KatexLoader from '../../components/KatexLoader.astro';
 import '../../styles/docs.css';
 ---
 
-<Layout title="SINT - Specification" description="SINT仕様書・研究資料">
+<Layout title="SINT - Specification" description="SINT Docs・研究資料">
     <Fragment slot="head">
         <KatexLoader />
     </Fragment>
 
     <!-- ヒーローセクション（元記事 DocsLayout と完全同一） -->
     <section class="docs-article-hero">
-        <h1 class="docs-title reveal-up is-revealed" id="specTitle">Loading Specification...</h1>
+        <h1 class="docs-title reveal-up is-revealed" id="specTitle">Loading...</h1>
         <div class="docs-article-meta reveal-up is-revealed" data-reveal-delay="0.1s">
             <span class="docs-meta-tag" id="specId">SPEC-??</span>
             <span class="docs-meta-tag" id="specTag">TAG</span>
             <span class="docs-meta-tag docs-meta-lock" id="specLockBadge" style="display: none;">MEMBERS ONLY</span>
             <span id="specDate">PUBLISHED: ----.--.--</span>
             <span>Written by: <strong id="specAuthor" style="font-weight: 700;">---</strong></span>
-            <a href="/editor/edit" id="editSpecBtn" class="docs-author-link" style="display: none; margin-left: auto; text-decoration: underline;">[EDIT SPEC ↗]</a>
+            <a href="/editor/edit" id="editSpecBtn" class="docs-author-link" style="display: none; margin-left: auto; text-decoration: underline;">[EDIT DOC ↗]</a>
         </div>
     </section>
 
@@ -38,7 +38,7 @@ import '../../styles/docs.css';
         <!-- 本文レンダラー -->
         <div class="docs-prose" id="specBody">
             <div style="padding: 4rem 0; text-align: center; color: var(--text-muted);">
-                仕様書データを読み込んでいます...
+                Docsを読み込んでいます...
             </div>
         </div>
 
@@ -104,13 +104,13 @@ import '../../styles/docs.css';
     }
 
     if (!slug) {
-        if (specTitleEl) specTitleEl.textContent = '仕様書が指定されていません';
+        if (specTitleEl) specTitleEl.textContent = 'Docsが指定されていません';
         if (specBodyEl) specBodyEl.innerHTML = '<p>有効な slug パラメータが必要です。</p>';
     } else if (slug !== 'apply') {
         fetchSpecBySlug(slug).then(spec => {
             if (!spec) {
-                if (specTitleEl) specTitleEl.textContent = '仕様書が見つかりませんでした (404)';
-                if (specBodyEl) specBodyEl.innerHTML = '<p>指定された仕様書は存在しないか、削除された可能性があります。</p>';
+                if (specTitleEl) specTitleEl.textContent = 'Docsが見つかりませんでした (404)';
+                if (specBodyEl) specBodyEl.innerHTML = '<p>指定されたDocsは存在しないか、削除された可能性があります。</p>';
                 return;
             }
 
@@ -161,7 +161,7 @@ import '../../styles/docs.css';
                                         <path d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h280v-80q0-66-47-113t-113-47q-66 0-113 47t-47 113h-80q0-100 70-170t170-70q100 0 170 70t70 170v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280Zm-240 40v-400 400Z"/>
                                     </svg>
                                 </div>
-                                <div class="lock-status-tag">RESTRICTED ACCESS // MEMBERS ONLY</div>
+                                <div class="lock-status-tag">MEMBERS ONLY</div>
                                 <h3 class="lock-card-title">この記事はSINTメンバー限定です</h3>
                                 <p class="lock-card-desc">
                                     当ドキュメントは内部ガバナンス規定に基づき、研究会メンバー専用資料として管理されています。<br>

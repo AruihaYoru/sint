@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import KatexLoader from '../../components/KatexLoader.astro';
 ---
 
-<Layout title="SINT - SPEC EDITOR" description="SINT仕様書の作成・改訂エディタ">
+<Layout title="SINT - DOCS EDITOR" description="SINT Docs作成・改訂エディタ">
     <Fragment slot="head">
         <KatexLoader />
     </Fragment>
@@ -11,7 +11,7 @@ import KatexLoader from '../../components/KatexLoader.astro';
         <header class="editor-header">
             <div>
                 <a href="/editor" class="back-link">← DASHBOARD</a>
-                <h1 class="editor-title" id="pageHeading">NEW SPECIFICATION</h1>
+                <h1 class="editor-title" id="pageHeading">NEW DOCUMENT</h1>
             </div>
             <div class="header-buttons">
                 <button type="button" id="previewToggleBtn" class="btn-secondary">PREVIEW TOGGLE</button>
@@ -43,12 +43,12 @@ import KatexLoader from '../../components/KatexLoader.astro';
 
                 <div class="form-group">
                     <label for="title">TITLE *</label>
-                    <input type="text" id="title" placeholder="仕様書のタイトル" required />
+                    <input type="text" id="title" placeholder="タイトル" required />
                 </div>
 
                 <div class="form-group">
                     <label for="description">DESCRIPTION *</label>
-                    <textarea id="description" rows="3" placeholder="仕様書の概要・要約" required></textarea>
+                    <textarea id="description" rows="3" placeholder="概要・要約" required></textarea>
                 </div>
 
                 <div class="form-row">
@@ -94,7 +94,7 @@ import KatexLoader from '../../components/KatexLoader.astro';
                 </div>
 
                 <div id="editPane" class="pane">
-                    <textarea id="content" class="content-textarea" placeholder="## 01 / INTRODUCTION&#10;&#10;仕様書本文を入力してください。&#10;数式（$E=mc^2$ や $$...$$）やHTMLタグもそのまま使用できます。"></textarea>
+                    <textarea id="content" class="content-textarea" placeholder="## 01 / INTRODUCTION&#10;&#10;本文を入力してください。&#10;数式（$E=mc^2$ や $$...$$）やHTMLタグもそのまま使用できます。"></textarea>
                 </div>
 
                 <div id="previewPane" class="pane preview-pane" style="display: none;">
@@ -168,7 +168,7 @@ import KatexLoader from '../../components/KatexLoader.astro';
     }
 
     if (!isNew && editSlug) {
-        if (pageHeading) pageHeading.textContent = `REVISE SPEC: ${editSlug}`;
+        if (pageHeading) pageHeading.textContent = `REVISE DOC: ${editSlug}`;
         if (slugInput) {
             slugInput.value = editSlug;
             slugInput.disabled = true;
@@ -177,7 +177,7 @@ import KatexLoader from '../../components/KatexLoader.astro';
         // Fetch existing spec
         fetchSpecBySlug(editSlug).then(spec => {
             if (!spec) {
-                alert('仕様書の取得に失敗しました');
+                alert('Docsの取得に失敗しました');
                 return;
             }
             specIdInput.value = spec.specId || '';
@@ -339,7 +339,7 @@ import KatexLoader from '../../components/KatexLoader.astro';
 
         if (res.success) {
             statusMsg.className = 'status-msg success';
-            statusMsg.innerHTML = `保存完了！ <a href="/docs/view?slug=${slug}" target="_blank">仕様書を見る ↗</a>`;
+            statusMsg.innerHTML = `保存完了！ <a href="/docs/view?slug=${slug}" target="_blank">Docsを見る ↗</a>`;
             statusMsg.style.display = 'block';
             if (isNew) {
                 setTimeout(() => {

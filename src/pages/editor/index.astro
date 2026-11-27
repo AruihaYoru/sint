@@ -2,28 +2,28 @@
 import Layout from '../../layouts/Layout.astro';
 ---
 
-<Layout title="SINT - SPEC DASHBOARD" description="SINT仕様書の作成・改訂・管理ダッシュボード">
+<Layout title="SINT - DOCS DASHBOARD" description="SINT Docs 管理ダッシュボード">
     <div class="dashboard-container">
         <header class="dash-header reveal-up">
             <div>
                 <span class="dash-badge">SINT INTERNAL // DASHBOARD</span>
-                <h1 class="dash-title">SPEC EDITOR DASHBOARD</h1>
-                <p class="dash-subtitle">Vercel ストレージに保存された仕様書の管理・作成・改訂</p>
+                <h1 class="dash-title">DOCS EDITOR DASHBOARD</h1>
+                <p class="dash-subtitle">Vercel ストレージに保存されたDocsの管理・作成・改訂</p>
             </div>
             <div class="dash-actions">
-                <a href="/editor/edit" class="btn-primary">+ NEW SPEC</a>
+                <a href="/editor/edit" class="btn-primary">+ NEW DOC</a>
                 <button id="logoutBtn" class="btn-secondary">LOGOUT</button>
             </div>
         </header>
 
         <section class="dash-content">
-            <div id="loading" class="loading-state">LOADING SPECS...</div>
+            <div id="loading" class="loading-state">LOADING DOCS...</div>
             <div id="errorBox" class="error-box" style="display: none;"></div>
 
             <div id="specList" class="spec-list" style="display: none;"></div>
             <div id="emptyState" class="empty-state" style="display: none;">
-                <p>保存された仕様書はまだありません。</p>
-                <a href="/editor/edit" class="btn-primary" style="margin-top: 1rem; display: inline-block;">最初の仕様書を作成</a>
+                <p>保存されたDocsはまだありません。</p>
+                <a href="/editor/edit" class="btn-primary" style="margin-top: 1rem; display: inline-block;">最初のDocを作成</a>
             </div>
         </section>
     </div>
@@ -126,7 +126,7 @@ import Layout from '../../layouts/Layout.astro';
                     const target = e.currentTarget as HTMLButtonElement;
                     const slug = target.dataset.slug!;
                     const title = target.dataset.title!;
-                    if (confirm(`仕様書「${title}」(${slug}) を本当に削除しますか？`)) {
+                    if (confirm(`Docs「${title}」(${slug}) を本当に削除しますか？`)) {
                         target.disabled = true;
                         target.textContent = 'DELETING...';
                         const res = await deleteSpec(slug);
