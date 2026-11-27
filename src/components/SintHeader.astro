@@ -24,13 +24,73 @@
             <li><a href="/faq" class="nav-link"><span class="nav-num">04</span>FAQ</a></li>
             <li><a href="/apply" class="nav-link"><span class="nav-num">05</span>TESTAMENT</a></li>
         </ul>
+
+        <!-- アカウントカード (JIS X 6301 / ID-1 規格 比率 8560:5398) -->
+        <div class="sidenav-account-container">
+            <!-- ログイン時：メンバーIDカード -->
+            <div class="sint-id-card card-member" id="menuLoggedInCard" style="display: none;">
+                <div class="card-top-row">
+                    <svg width="34" height="26" viewBox="0 0 34 26" fill="none" class="id-card-chip">
+                        <rect width="34" height="26" rx="4" fill="#c49746" fill-opacity="0.25" stroke="#c49746" stroke-width="1.2"/>
+                        <path d="M0 9H12M0 17H12M22 9H34M22 17H34M12 4V22M22 4V22" stroke="#c49746" stroke-width="1.2" stroke-linecap="round"/>
+                        <circle cx="17" cy="13" r="3" stroke="#c49746" stroke-width="1.2"/>
+                    </svg>
+                    <div class="card-issuer-tag">
+                        <span>SINT // JIS X 6301</span>
+                        <strong>MEMBER ID</strong>
+                    </div>
+                </div>
+                <div class="card-mid-row">
+                    <div class="card-user-name" id="menuCardName">MEMBER</div>
+                    <div class="card-user-role" id="menuCardRole">AUTHENTICATED</div>
+                </div>
+                <div class="card-bottom-row">
+                    <div class="card-status-indicator">
+                        <span class="status-dot"></span>
+                        <span class="status-label">ONLINE</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="/editor" class="card-action-btn">DASHBOARD ↗</a>
+                        <button type="button" class="card-action-btn btn-logout" id="menuLogoutBtn">LOGOUT</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 未ログイン時：ゲスト・ログインアクセスカード -->
+            <div class="sint-id-card card-guest" id="menuGuestCard" style="display: none;">
+                <div class="card-top-row">
+                    <svg width="34" height="26" viewBox="0 0 34 26" fill="none" class="id-card-chip">
+                        <rect width="34" height="26" rx="4" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.4"/>
+                        <path d="M0 9H12M0 17H12M22 9H34M22 17H34M12 4V22M22 4V22" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+                        <circle cx="17" cy="13" r="3" stroke="currentColor" stroke-width="1.2" opacity="0.4"/>
+                    </svg>
+                    <div class="card-issuer-tag">
+                        <span>SINT // JIS X 6301</span>
+                        <strong>ACCESS PASS</strong>
+                    </div>
+                </div>
+                <div class="card-mid-row">
+                    <div class="card-user-name" style="font-size: 1.05rem; opacity: 0.85;">GUEST VISITOR</div>
+                    <div class="card-user-role">メンバー限定資料・仕様書編集</div>
+                </div>
+                <div class="card-bottom-row">
+                    <span class="card-guest-tag">RESTRICTED</span>
+                    <div class="card-actions">
+                        <a href="/editor/login" class="card-action-btn btn-login-accent" id="menuLoginLink">LOGIN ↗</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="sidenav-footer">
             SINT // THE MATHEMATICAL CRUCIBLE
         </div>
     </div>
 </div>
 
-<script is:inline>
+<script>
+    import { getToken, clearToken, verifySession } from '../lib/api';
+
     document.addEventListener('DOMContentLoaded', () => {
         const toggle = document.getElementById('nav-toggle');
         const close = document.getElementById('nav-close');
@@ -49,9 +109,231 @@
         close?.addEventListener('click', closeMenu);
         overlay?.addEventListener('click', closeMenu);
 
-        // Close menu on link click (especially for page transitions or anchors)
+        // Close menu on link click
         document.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', closeMenu);
         });
+
+        // Initialize Account Card
+        const token = getToken();
+        const loggedInCard = document.getElementById('menuLoggedInCard');
+        const guestCard = document.getElementById('menuGuestCard');
+        const cardName = document.getElementById('menuCardName');
+        const cardRole = document.getElementById('menuCardRole');
+        const logoutBtn = document.getElementById('menuLogoutBtn');
+        const loginLink = document.getElementById('menuLoginLink') as HTMLAnchorElement | null;
+
+        if (loginLink) {
+            loginLink.href = `/editor/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+        }
+
+        if (token) {
+            if (loggedInCard) loggedInCard.style.display = 'flex';
+            if (guestCard) guestCard.style.display = 'none';
+
+            try {
+                const cachedUser = JSON.parse(localStorage.getItem('sint_user') || '{}');
+                if (cachedUser && (cachedUser.name || cachedUser.username)) {
+                    if (cardName) cardName.textContent = cachedUser.name || cachedUser.username;
+                    if (cardRole) cardRole.textContent = `${(cachedUser.roleTitle || cachedUser.role || 'MEMBER').toUpperCase()}`;
+                }
+            } catch (e) {}
+
+            verifySession().then(({ valid, user }) => {
+                if (valid && user) {
+                    if (cardName) cardName.textContent = user.username;
+                    if (cardRole) cardRole.textContent = `${user.role.toUpperCase()} // SINT`;
+                    try {
+                        localStorage.setItem('sint_user', JSON.stringify(user));
+                    } catch (e) {}
+                } else if (!valid) {
+                    clearToken();
+                    localStorage.removeItem('sint_user');
+                    if (loggedInCard) loggedInCard.style.display = 'none';
+                    if (guestCard) guestCard.style.display = 'flex';
+                }
+            });
+        } else {
+            if (loggedInCard) loggedInCard.style.display = 'none';
+            if (guestCard) guestCard.style.display = 'flex';
+        }
+
+        logoutBtn?.addEventListener('click', () => {
+            clearToken();
+            localStorage.removeItem('sint_user');
+            window.location.reload();
+        });
     });
 </script>
+
+<style>
+.sidenav-account-container {
+    margin-top: auto;
+    margin-bottom: 24px;
+    width: 100%;
+}
+
+.sint-id-card {
+    width: 100%;
+    max-width: 330px;
+    aspect-ratio: 8560 / 5398;
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+}
+
+.sint-id-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.card-member {
+    border: 1px solid var(--text-color);
+    background: linear-gradient(135deg, rgba(20, 40, 75, 0.05) 0%, rgba(20, 40, 75, 0.12) 100%);
+}
+
+.card-guest {
+    border: 1px dashed var(--border-color);
+    opacity: 0.9;
+}
+
+.card-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.card-issuer-tag {
+    text-align: right;
+    font-family: var(--font-en);
+    display: flex;
+    flex-direction: column;
+}
+
+.card-issuer-tag span {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+}
+
+.card-issuer-tag strong {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--text-color);
+}
+
+.card-mid-row {
+    margin: auto 0;
+}
+
+.card-user-name {
+    font-family: var(--font-en);
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-color);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-user-role {
+    font-family: var(--font-en);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-top: 3px;
+}
+
+.card-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border-color);
+    padding-top: 10px;
+}
+
+.card-status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-en);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #10b981;
+    display: inline-block;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.card-guest-tag {
+    font-family: var(--font-en);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+}
+
+.card-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.card-action-btn {
+    font-family: var(--font-en);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--text-color);
+    text-decoration: none;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    padding: 3px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1.4;
+}
+
+.card-action-btn:hover {
+    background: var(--text-color);
+    color: var(--bg-color) !important;
+}
+
+.btn-login-accent {
+    border-color: var(--text-color);
+    background: var(--text-color);
+    color: var(--bg-color) !important;
+}
+
+.btn-login-accent:hover {
+    opacity: 0.85;
+}
+
+.btn-logout {
+    border-color: transparent;
+    opacity: 0.7;
+}
+
+.btn-logout:hover {
+    background: transparent;
+    color: #ef4444 !important;
+    opacity: 1;
+}
+</style>

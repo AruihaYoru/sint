@@ -13,7 +13,6 @@ import Layout from '../../layouts/Layout.astro';
                 <div class="form-group">
                     <label for="apiUrl">API BASE URL</label>
                     <input type="text" id="apiUrl" placeholder="http://localhost:8000" required />
-                    <span class="help-text">APIサーバーのURL（ローカル動作時は http://localhost:8000 または https://api.sint-org.com）</span>
                 </div>
 
                 <div class="form-group">
@@ -80,6 +79,9 @@ import Layout from '../../layouts/Layout.astro';
 
             if (res.ok && data.success && data.token) {
                 setToken(data.token);
+                if (data.user) {
+                    localStorage.setItem('sint_user', JSON.stringify(data.user));
+                }
                 const redirectParam = new URLSearchParams(window.location.search).get('redirect');
                 const targetUrl = redirectParam && redirectParam.startsWith('/') ? redirectParam : '/editor';
                 window.location.href = targetUrl;
